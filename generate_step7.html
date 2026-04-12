@@ -61,7 +61,7 @@
     <div class="enhance-step__layout">
       <div class="enhance-step__preview">
         <div class="enhance-step__image-wrap">
-          <img class="enhance-step__image" id="step7-preview-image" alt="Предпросмотр изображения">
+          <img class="enhance-step__image is-visible" id="step7-preview-image" src="img/after.png" alt="Предпросмотр изображения">
           <div class="enhance-step__empty" id="step7-preview-empty">Изображение не загружено</div>
         </div>
       </div>
@@ -196,6 +196,8 @@
   };
 
   const STORAGE_KEYS = {
+    canvasSize: "mozle_canvas_size",
+    editorOrientation: "mozle_editor_orientation",
     uploadedImageName: "mozle_uploaded_image_name",
     uploadedImageFallback: "mozle_uploaded_image_data",
     editedImageFallback: "mozle_edited_image_data"
@@ -205,6 +207,7 @@
   const menu = document.getElementById("menu2");
   const previewImage = document.getElementById("step7-preview-image");
   const previewEmpty = document.getElementById("step7-preview-empty");
+  const previewWrap = document.querySelector(".enhance-step__image-wrap");
 
   let currentObjectUrl = "";
 
@@ -212,6 +215,31 @@
     burger.addEventListener("click", () => {
       menu.classList.toggle("active");
     });
+  }
+
+  function parseCanvasFormat(formatValue) {
+    const [rowsRaw, colsRaw] = (formatValue || "2x3").toLowerCase().split("x");
+    const rows = Number.parseInt(rowsRaw, 10);
+    const cols = Number.parseInt(colsRaw, 10);
+
+    return {
+      rows: Number.isFinite(rows) && rows > 0 ? rows : 2,
+      cols: Number.isFinite(cols) && cols > 0 ? cols : 3
+    };
+  }
+
+  function getRenderDimensions() {
+    const { rows, cols } = parseCanvasFormat(localStorage.getItem(STORAGE_KEYS.canvasSize) || "2x3");
+    const orientation = localStorage.getItem(STORAGE_KEYS.editorOrientation) === "portrait" ? "portrait" : "landscape";
+
+    return orientation === "portrait"
+      ? { renderRows: cols, renderCols: rows }
+      : { renderRows: rows, renderCols: cols };
+  }
+
+  function applyCanvasAspectRatio() {
+    if (!previewWrap) return;
+    previewWrap.style.aspectRatio = "1 / 1";
   }
 
   function openImageDB() {
@@ -267,45 +295,16 @@
   }
 
   async function applyStoredImage() {
-    const editedRecord = await getStoredImage(IMAGE_DB_CONFIG.editedImageKey);
-
-    if (editedRecord && editedRecord.blob) {
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-      }
-      currentObjectUrl = URL.createObjectURL(editedRecord.blob);
-      setPreviewSource(currentObjectUrl);
-      return;
-    }
-
-    const editedFallbackData = localStorage.getItem(STORAGE_KEYS.editedImageFallback);
-    if (editedFallbackData) {
-      setPreviewSource(editedFallbackData);
-      return;
-    }
-
-    const storedRecord = await getStoredImage(IMAGE_DB_CONFIG.originalImageKey);
-
-    if (storedRecord && storedRecord.blob) {
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl);
-      }
-      currentObjectUrl = URL.createObjectURL(storedRecord.blob);
-      setPreviewSource(currentObjectUrl);
-      return;
-    }
-
-    const fallbackData = localStorage.getItem(STORAGE_KEYS.uploadedImageFallback);
-    if (fallbackData) {
-      setPreviewSource(fallbackData);
-      return;
-    }
-
-    setPreviewSource("");
+    setPreviewSource("img/after.png");
   }
 
   window.addEventListener("DOMContentLoaded", async () => {
+    applyCanvasAspectRatio();
     await applyStoredImage();
+  });
+
+  window.addEventListener("resize", () => {
+    applyCanvasAspectRatio();
   });
 
   window.addEventListener("beforeunload", () => {

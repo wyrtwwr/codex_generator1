@@ -348,6 +348,7 @@ body {
   border-radius: 50%;
   margin-right: -2px;
   flex: 0 0 54px;
+  color: #ffffff;
 }
 
 .editor-tool__icon svg,
@@ -382,6 +383,14 @@ body {
   border-color: #111111;
 }
 
+.editor-tool--red .editor-tool__icon {
+  color: #111111;
+}
+
+.editor-tool--outline .editor-tool__icon {
+  color: #111111;
+}
+
 .editor-tool--outline:hover,
 .editor-tool--outline:active,
 .editor-tool--outline:focus-visible,
@@ -414,6 +423,7 @@ body {
 .editor-tool--red.is-active .editor-tool__text {
   background: radial-gradient(315.13% 323.48% at 23.74% -32.66%, #bf1f32 0%, #590f17 100%);
   border-color: #111111;
+  color: #ffffff;
 }
 
 .editor-side__meta {

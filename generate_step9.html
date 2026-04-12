@@ -165,6 +165,8 @@
   };
 
   const STORAGE_KEYS = {
+    canvasSize: "mozle_canvas_size",
+    editorOrientation: "mozle_editor_orientation",
     uploadedImageName: "mozle_uploaded_image_name",
     uploadedImageFallback: "mozle_uploaded_image_data",
     editedImageFallback: "mozle_edited_image_data"
@@ -172,6 +174,7 @@
 
   const burger = document.getElementById("burger");
   const menu = document.getElementById("menu2");
+  const previewWrap = document.querySelector(".final-step__preview-wrap");
   const previewImage = document.getElementById("step9-preview-image");
   const previewEmpty = document.getElementById("step9-preview-empty");
   const instructionLink = document.getElementById("get-instruction-link");
@@ -190,7 +193,32 @@
       alert("Кнопка генерации подключается на следующем этапе.");
     });
   }
+  function parseCanvasFormat(formatValue) {
+    const [rowsRaw, colsRaw] = (formatValue || "2x3").toLowerCase().split("x");
+    const rows = Number.parseInt(rowsRaw, 10);
+    const cols = Number.parseInt(colsRaw, 10);
 
+    return {
+      rows: Number.isFinite(rows) && rows > 0 ? rows : 2,
+      cols: Number.isFinite(cols) && cols > 0 ? cols : 3
+    };
+  }
+
+  function getRenderDimensions() {
+    const { rows, cols } = parseCanvasFormat(localStorage.getItem(STORAGE_KEYS.canvasSize) || "2x3");
+    const orientation = localStorage.getItem(STORAGE_KEYS.editorOrientation) === "portrait" ? "portrait" : "landscape";
+
+    return orientation === "portrait"
+      ? { renderRows: cols, renderCols: rows }
+      : { renderRows: rows, renderCols: cols };
+  }
+
+  function applyCanvasAspectRatio() {
+    if (!previewWrap) return;
+
+    const { renderRows, renderCols } = getRenderDimensions();
+    previewWrap.style.aspectRatio = `${renderCols} / ${renderRows}`;
+  }
   function openImageDB() {
     return new Promise((resolve, reject) => {
       if (!("indexedDB" in window)) {
@@ -282,6 +310,7 @@
   }
 
   window.addEventListener("DOMContentLoaded", async () => {
+    applyCanvasAspectRatio();
     await applyStoredImage();
   });
 
@@ -293,3 +322,4 @@
 </script>
 </body>
 </html>
+

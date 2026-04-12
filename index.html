@@ -11,6 +11,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style/style_generate.css">
     <link rel="stylesheet" href="style/style_generate_1000.css">
+    <style>
+      .code-step__actions a.is-disabled {
+        cursor: not-allowed;
+      }
+
+      .code-step__actions a.is-disabled .step-btn__main--red,
+      .code-step__actions a.is-disabled .step-btn__icon--red {
+        opacity: 0.55;
+      }
+
+      .code-step__actions a.is-disabled button {
+        cursor: not-allowed;
+      }
+    </style>
 
  
 </head>
@@ -111,7 +125,7 @@
 
 </a>
 
-  <a href="generate_step2.html">
+  <a id="next-step-link" href="generate_step2.html">
       <div class="step-btn step-btn--next">
     
     <button class="step-btn__main step-btn__main--red" type="button">
@@ -270,19 +284,44 @@ if (wrapper && cards.length && prev && next) {
 
 
  const secretCodeInput = document.getElementById("secret-code");
+const nextStepLink = document.getElementById("next-step-link");
 
-  secretCodeInput.addEventListener("input", function (e) {
-    let value = e.target.value;
+if (secretCodeInput && nextStepLink) {
+  const nextStepHref = nextStepLink.getAttribute("href") || "generate_step2.html";
 
-    /* оставляем только цифры */
-    value = value.replace(/\D/g, "");
+  function getDigits(value) {
+    return value.replace(/\D/g, "").slice(0, 9);
+  }
 
-    /* максимум 9 цифр */
-    value = value.slice(0, 9);
+  function setNextStepState(enabled) {
+    nextStepLink.classList.toggle("is-disabled", !enabled);
+    nextStepLink.setAttribute("aria-disabled", String(!enabled));
 
-    /* формат XXX-XXX-XXX */
-    let formatted = value.match(/.{1,3}/g);
-    e.target.value = formatted ? formatted.join("-") : "";
+    if (enabled) {
+      nextStepLink.setAttribute("href", nextStepHref);
+      nextStepLink.removeAttribute("tabindex");
+    } else {
+      nextStepLink.removeAttribute("href");
+      nextStepLink.setAttribute("tabindex", "-1");
+    }
+  }
+
+  function formatAndValidateCode() {
+    const digits = getDigits(secretCodeInput.value);
+    const formatted = digits.match(/.{1,3}/g);
+    secretCodeInput.value = formatted ? formatted.join("-") : "";
+    setNextStepState(digits.length === 9);
+  }
+
+  secretCodeInput.addEventListener("input", formatAndValidateCode);
+
+  nextStepLink.addEventListener("click", function (event) {
+    if (getDigits(secretCodeInput.value).length !== 9) {
+      event.preventDefault();
+    }
   });
+
+  formatAndValidateCode();
+}
 </script>
 </html>
