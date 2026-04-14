@@ -90,7 +90,7 @@
   .canvas-step__schemes {
     width: 100%;
     max-width: 200px;
-    min-height: 165px;
+    min-height: 175px;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -112,6 +112,11 @@
     background: #d9d9d9;
     border: 1.5px solid #6a6a6a;
     box-sizing: border-box;
+  }
+
+  .canvas-step__schemes.is-large-cells .canvas-scheme span {
+    width: 43px;
+    height: 43px;
   }
 
 
@@ -146,9 +151,10 @@
     margin: 0 auto;
     padding: 0 12px;
     box-sizing: border-box;
-    font-size: 12px;
+    font-size: 14px;
     line-height: 1.25;
     text-align: center;
+    white-space: normal;
   }
 
   .canvas-step__actions {
@@ -189,6 +195,10 @@
   .canvas-step__actions {
     padding: 0 18px;
   }
+
+  .canvas-step__note {
+    font-size: 14px;
+  }
 }
 @media (max-width: 350px) {
   .canvas-scheme span {
@@ -197,6 +207,11 @@
     background: #d9d9d9;
     border: 1.5px solid #6a6a6a;
     box-sizing: border-box;
+  }
+
+  .canvas-step__schemes.is-large-cells .canvas-scheme span {
+    width: 43px;
+    height: 43px;
   }
 
   .canvas-step__schemes {

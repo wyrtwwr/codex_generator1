@@ -90,6 +90,7 @@ body {
 
 .email-step__actions-row--secondary {
   margin-top: 12px;
+  gap: 12px;
 }
 
 .email-step__skip {
@@ -192,14 +193,42 @@ body {
 }
 
 .email-action--continue.is-active .email-action__main,
-.email-action--continue.is-active .email-action__icon {
+.email-action--continue.is-active .email-action__icon,
+.email-action--send[aria-disabled="false"] .email-action__main,
+.email-action--send[aria-disabled="false"] .email-action__icon,
+.email-action--continue[aria-disabled="false"] .email-action__main,
+.email-action--continue[aria-disabled="false"] .email-action__icon {
   border-color: #111111;
   background: radial-gradient(315.13% 323.48% at 23.74% -32.66%, #bf1f32 0%, #590f17 100%);
   color: #ffffff;
 }
 
 .email-action[aria-disabled="true"]:not(.email-action--back) {
-  cursor: pointer;
+  cursor: not-allowed;
+}
+
+.email-action[aria-disabled="true"]:not(.email-action--back) .email-action__main,
+.email-action[aria-disabled="true"]:not(.email-action--back) .email-action__icon {
+  background: #ffffff !important;
+  border-color: #b8b8b8 !important;
+  color: #8a8a8a !important;
+  box-shadow: none !important;
+}
+
+.email-action[aria-disabled="true"]:not(.email-action--back) .email-action__main--outline,
+.email-action[aria-disabled="true"]:not(.email-action--back) .email-action__icon--outline {
+  background: #ffffff !important;
+  border-color: #b8b8b8 !important;
+  color: #8a8a8a !important;
+}
+
+.email-action[aria-disabled="true"]:not(.email-action--back):hover .email-action__icon {
+  transform: none;
+}
+
+.email-action--send[aria-disabled="true"],
+.email-action--continue[aria-disabled="true"] {
+  filter: none !important;
 }
 
 @media (max-width: 1180px) {
@@ -477,6 +506,14 @@ body {
   .email-action--continue .email-action__icon {
     order: 2 !important;
     margin-left: -1px !important;
+  }
+
+  .email-step__actions-row--secondary .email-action--continue {
+    order: 1 !important;
+  }
+
+  .email-step__actions-row--secondary .email-action--back {
+    order: 2 !important;
   }
 
   .email-step__skip {

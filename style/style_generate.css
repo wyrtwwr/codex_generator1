@@ -623,12 +623,13 @@ box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1), 2px 3px 3px 0 rgba(0, 0, 0, 0.09), 3
 }
 
 .sets-step__note {
-  max-width: 880px;
+  max-width: 100%;
   margin: 30px auto;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.35;
   font-weight: 400;
   color: #4c4c4c;
+  white-space: nowrap;
 }
 
 .sets-step__note-link {
@@ -694,8 +695,8 @@ box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1), 2px 3px 3px 0 rgba(0, 0, 0, 0.09), 3
     width: max-content;
     margin: 0 auto 22px;
     display: flex;
-    align-items: flex-start;
-    gap: 52px;
+    align-items: center;
+    gap: 40px;
   }
 
   /* карточка step 3 в стиле step 2 */
@@ -764,16 +765,20 @@ border-radius: 16px;
 
   /* схемы справа */
   .cancas_cont {
-    width: 200px;
+    width: 310px;
     display: flex;
-    padding-left: 30px;
+    justify-content: center;
+    align-items: center;
+    padding-left: 0;
   }
 .canvas-step__schemes {
-
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding-top: 6px;
+  flex-direction: row;
+  gap: 42px;
+  min-height: 220px;
+  align-items: center;
+  justify-content: center;
+  padding-top: 0;
 }
 
 .canvas-scheme {
@@ -783,11 +788,18 @@ border-radius: 16px;
 }
 
 .canvas-scheme span {
-  width: 28px;
-  height: 28px;
+  width: 33px;
+  height: 33px;
   background: #d9d9d9;
-  border: 1.5px solid #6a6a6a;
+  border: 2px solid #6a6a6a;
   box-sizing: border-box;
+}
+
+@media (min-width: 1001px) {
+  .canvas-step__schemes.is-large-cells .canvas-scheme span {
+    width: 43px;
+    height: 43px;
+  }
 }
 
 .canvas-scheme--tall {
@@ -795,8 +807,8 @@ border-radius: 16px;
 }
 
   .canvas-scheme--wide {
-    grid-template-columns: repeat(3, 28px);
-    grid-template-rows: repeat(2, 28px);
+    grid-template-columns: repeat(3, 40px);
+    grid-template-rows: repeat(2, 40px);
   }
 
  
@@ -805,8 +817,8 @@ border-radius: 16px;
     margin: 20px auto 16px;
     width: max-content;
     display: grid;
-    grid-template-columns: repeat(4, 120px);
-    gap: 14px 16px;
+    grid-template-columns: repeat(4, 134px);
+    gap: 14px 22px;
   }
 
   .canvas-size__btn {
@@ -841,12 +853,13 @@ border-radius: 16px;
   }
 
   .canvas-step__note {
-    max-width: 880px;
+    max-width: 100%;
     margin: 30px auto;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.35;
     font-weight: 400;
     color: #4c4c4c;
+    white-space: nowrap;
   }
 
   .canvas-step__note-link {
@@ -958,6 +971,17 @@ border-radius: 16px;
 
 .upload-action__icon,
 .upload-action__main {
+  color: #8a8fa0;
+  border: 2px solid #2f2a2b;
+  background: #f8f8f8;
+}
+
+.upload-action__icon svg path {
+  fill: currentColor;
+}
+
+.upload-action.is-loaded .upload-action__icon,
+.upload-action.is-loaded .upload-action__main {
   color: #ffffff;
   border: 2px solid #111111;
   background: radial-gradient(

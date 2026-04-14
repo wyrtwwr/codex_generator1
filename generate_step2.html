@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="style/style_generate_1000_step2.css">
 
  
+    <link rel="stylesheet" href="style/style_generate_buttons_unified.css">
 </head>
 <body>
 
@@ -29,14 +30,7 @@
 
 
 </div>
-            <div  id="menu" class="link_box">
-                <a href="" class="header_link">Получить инструкцию</a>
-                <a href="" class="header_link">Загрузить фото</a>
-                <a href="" class="header_link">Каталог</a>
-                <a href="" class="header_link">Дилерам</a>
-                <a href="" class="header_link">Контакты</a>
-            </div>
-        </div>
+</div>
     </header>
  <!-- меню конец -->
 
@@ -45,26 +39,8 @@
 
 <div class="logo_box_mob">
     <img src="img/logo.png" alt="">
-    <div class="burger" id="burger">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-    <div class="right_txt_mob">
-    <h3>+7 900 000-00-00</h3>
-    <h3>info@mozle.ru</h3>
-    </div>
-
 </div>
-            <div  id="menu2" class="link_box">
-                <a href="" class="header_link">Получить инструкцию</a>
-                <a href="" class="header_link">Загрузить фото</a>
-                <a href="" class="header_link">Каталог</a>
-                <a href="" class="header_link">Дилерам</a>
-                <a href="" class="header_link">Контакты</a>
-            </div>
-
-        </div>
+</div>
  </div>
   <div class="page">
 <section class="sets-step">
@@ -211,7 +187,8 @@
   const STORAGE_KEYS = {
     setSize: "mozle_set_size",
     setIndex: "mozle_set_index",
-    setCount: "mozle_set_count"
+    setCount: "mozle_set_count",
+    canvasSize: "mozle_canvas_size"
   };
 
   const burger = document.getElementById("burger");
@@ -278,6 +255,13 @@
     if (!nextLink) return;
 
     const isReady = Boolean(selectedSize && selectedCount);
+    const shouldSkipStep3 = selectedSize === "S" && selectedCount === 1;
+
+    nextLink.setAttribute("href", shouldSkipStep3 ? "generate_step4.html" : "generate_step3.html");
+
+    if (shouldSkipStep3) {
+      localStorage.setItem(STORAGE_KEYS.canvasSize, "2x2");
+    }
 
     if (isReady) {
       nextLink.style.pointerEvents = "auto";
