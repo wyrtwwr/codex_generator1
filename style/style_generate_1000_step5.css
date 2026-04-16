@@ -20,7 +20,7 @@
   background: white;
 }
 .footer-nav {
-  display: none;
+  display: block;
 }
 .footer-legal {
   display: none;

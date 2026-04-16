@@ -24,7 +24,7 @@ body {
 .email-step__title {
   margin: 0;
   color: #111111;
-  font-size: 34px;
+  font-size: 28px;
   line-height: 1.1;
   font-weight: 700;
 }
@@ -34,24 +34,25 @@ body {
   max-width: 760px;
   color: #5a5a5a;
   font-size: 18px;
-  line-height: 1.18;
+  line-height: 1.5;
   font-weight: 500;
 }
 
 .email-step__form-area {
-  width: min(100%, 900px);
+  width: fit-content;
+  max-width: min(100%, 900px);
   margin: 62px auto 0;
 }
 
 .email-step__input-wrap {
   display: block;
-  width: min(100%, 475px);
+  width: 100%;
   margin: 0 auto;
 }
 
 .email-step__input {
   width: 100%;
-  height: 48px;
+  height: 62px;
   padding: 0 24px;
   box-sizing: border-box;
   border: 1.5px solid #151515;
@@ -59,7 +60,7 @@ body {
   background: #ffffff;
   color: #111111;
   font-family: "Montserrat", sans-serif;
-  font-size: 14px;
+  font-size: 24px;
   line-height: 1;
   font-weight: 500;
   text-align: center;
@@ -90,7 +91,7 @@ body {
 
 .email-step__actions-row--secondary {
   margin-top: 12px;
-  gap: 12px;
+  gap: 70px;
 }
 
 .email-step__skip {
@@ -99,6 +100,119 @@ body {
   font-size: 15px;
   line-height: 1.1;
   font-weight: 500;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font-family: "Montserrat", sans-serif;
+  text-transform: uppercase;
+}
+
+.email-step__skip:hover {
+  color: #404040;
+}
+
+.email-skip-hint-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 120;
+}
+
+.email-skip-hint-backdrop.is-visible {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.email-skip-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(468px, calc(100vw - 36px));
+  transform: translate(-50%, -94%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 130;
+}
+
+.email-skip-hint.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.email-skip-hint__arrow {
+  position: absolute;
+  left: 342px;
+  bottom: -68px;
+  width: 91px;
+  height: 79px;
+  pointer-events: none;
+}
+
+.email-skip-hint__card {
+  border: 2px solid #111111;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f5f5f5;
+  text-align: left;
+}
+
+.email-skip-hint__head {
+  margin: 0;
+  padding: 8px 14px 10px;
+  background: radial-gradient(315.13% 323.48% at 23.74% -32.66%, #bf1f32 0%, #590f17 100%);
+  color: #ffffff;
+  text-align: center;
+  font-size: 24px;
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.email-skip-hint__body {
+  padding: 12px 20px 18px;
+}
+
+.email-skip-hint__text {
+  margin: 0;
+  color: #1f1f1f;
+  font-size: 16px;
+  line-height: 1.15;
+  font-weight: 500;
+}
+
+.email-skip-hint__close {
+  min-width: 146px;
+  min-height: 40px;
+  margin: 16px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #111111;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
+  color: #1a1a1a;
+  cursor: pointer;
+}
+
+.email-skip-hint__close:hover {
+  transform: translateY(-1px);
+}
+
+body.email-skip-hint-open {
+  overflow: hidden;
 }
 
 .email-action {
@@ -244,15 +358,16 @@ body {
   }
 
   .email-step__title {
-    font-size: 16px;
+    font-size: 22px;
     line-height: 1.14;
   }
 
   .email-step__lead {
     width: min(100%, 312px);
-    margin-top: 18px;
+    margin-top: 12px;
     font-size: 11px;
-    line-height: 1.18;
+    line-height: 1.2;
+    font-weight: 500;
   }
 
   .email-step__lead br,
@@ -271,9 +386,9 @@ body {
   }
 
   .email-step__input {
-    height: 37px;
+    height: 48px;
     padding: 0 16px;
-    font-size: 11px;
+    font-size: 14px;
     border-width: 1.5px;
   }
 
@@ -289,7 +404,8 @@ body {
 
   .email-step__skip {
     margin-top: 16px;
-    font-size: 17px;
+    font-size: 12px;
+    line-height: 1.1;
   }
 
   .email-action__main {
@@ -424,13 +540,13 @@ body {
 /* step10 mobile layout — back centered, send/continue full width, input 22px */
 @media (max-width: 1000px) {
   .email-step__input {
-    height: 65px !important;
-    font-size: 22px !important;
+    height: 48px !important;
+    font-size: 14px !important;
     line-height: 1 !important;
   }
 
   .email-step__input::placeholder {
-    font-size: 22px !important;
+    font-size: 14px !important;
   }
 
   .email-step__actions-row--primary,
@@ -443,11 +559,11 @@ body {
   }
 
   .email-step__actions-row--primary {
-    margin-top: 45px !important;
+    margin-top: 26px !important;
   }
 
   .email-step__actions-row--secondary {
-    margin-top: 12px !important;
+    margin-top: 10px !important;
   }
 
   .email-action__icon {
@@ -517,16 +633,158 @@ body {
   }
 
   .email-step__skip {
-    margin-top: 45px !important;
+    margin-top: 16px !important;
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+  }
+
+  .email-skip-hint {
+    width: min(312px, calc(100vw - 24px));
+    transform: translate(-50%, -146%);
+  }
+
+  .email-skip-hint-backdrop {
+    background: rgba(0, 0, 0, 0.38);
+  }
+
+  .email-skip-hint-backdrop.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .email-skip-hint__arrow {
+    width: 69px;
+    height: 43px;
+    left: 222px;
+    bottom: -38px;
+  }
+
+  .email-skip-hint__head {
+    padding: 8px 12px 9px;
+    font-size: 18px;
+  }
+
+  .email-skip-hint__body {
+    padding: 10px 12px 14px;
+  }
+
+  .email-skip-hint__text {
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  .email-skip-hint__close {
+    min-width: 128px;
+    min-height: 34px;
+    margin-top: 12px;
+    font-size: 13px;
   }
 }
 
 @media (max-width: 389px) {
+  .email-skip-hint {
+    width: min(292px, calc(100vw - 18px));
+  }
+
   .email-step__input {
-    font-size: 22px !important;
+    font-size: 14px !important;
   }
 
   .email-step__input::placeholder {
-    font-size: 22px !important;
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 349px) {
+  .email-step {
+    padding: 14px 10px 0;
+  }
+
+  .email-step__title {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+
+  .email-step__lead {
+    width: 100%;
+    max-width: none;
+    margin-top: 10px;
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .email-step__form-area {
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: 20px !important;
+  }
+
+  .email-step__input-wrap {
+    max-width: none !important;
+  }
+
+  .email-step__input {
+    height: 42px !important;
+    padding: 0 12px !important;
+    font-size: 12px !important;
+  }
+
+  .email-step__input::placeholder {
+    font-size: 12px !important;
+  }
+
+  .email-step__actions-row--primary,
+  .email-step__actions-row--secondary {
+    gap: 10px !important;
+  }
+
+  .email-step__skip {
+    margin-top: 12px !important;
+    font-size: 10px !important;
+  }
+
+  .email-action__main {
+    height: 42px !important;
+    min-height: 42px !important;
+    font-size: 12px !important;
+    padding: 0 10px !important;
+  }
+
+  .email-action__icon {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    flex: 0 0 42px !important;
+  }
+
+  .email-action__icon svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .email-action--back .email-action__main {
+    width: 118px !important;
+    min-width: 118px !important;
+  }
+
+  .email-skip-hint {
+    width: min(274px, calc(100vw - 16px));
+    transform: translate(-50%, -128%);
+  }
+
+  .email-skip-hint__head {
+    font-size: 16px;
+  }
+
+  .email-skip-hint__text {
+    font-size: 12px;
+  }
+
+  .email-skip-hint__arrow {
+    width: 60px;
+    height: 38px;
+    left: 204px;
+    bottom: -32px;
   }
 }
