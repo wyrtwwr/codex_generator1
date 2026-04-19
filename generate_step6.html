@@ -41,7 +41,7 @@
         <div class="editor-slider editor-slider--top">
           <div class="editor-slider__icon" aria-hidden="true">
      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M7.05556 11.2222H15.3889M18.1667 18.1667L26.5 26.5M11.2222 7.14311V15.4764M11.2222 20.9444C5.85279 20.9444 1.5 16.5917 1.5 11.2222C1.5 5.85279 5.85279 1.5 11.2222 1.5C16.5917 1.5 20.9444 5.85279 20.9444 11.2222C20.9444 16.5917 16.5917 20.9444 11.2222 20.9444Z" stroke="#0F0F0F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M7.05556 11.2222H15.3889M18.1667 18.1667L26.5 26.5M11.2222 7.14311V15.4764M11.2222 20.9444C5.85279 20.9444 1.5 16.5917 1.5 11.2222C1.5 5.85279 5.85279 1.5 11.2222 1.5C16.5917 1.5 20.9444 5.85279 20.9444 11.2222C20.9444 16.5917 16.5917 20.9444 11.2222 20.9444Z" stroke="#0F0F0F" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
           </div>
           <input class="editor-slider__input" id="zoom-range" type="range" min="100" max="250" step="1" value="118">
@@ -72,11 +72,8 @@
           <button class="editor-tool editor-tool--outline" id="orientation-toggle" type="button" data-hint-trigger="orientation">
             <span class="editor-tool__icon" aria-hidden="true">
          <svg width="25" height="28" viewBox="0 0 25 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="1" y="14.6587" width="23" height="12" rx="1" stroke="currentColor" stroke-width="2"/>
-<mask id="path-2-inside-1_0_1" fill="white">
-<path d="M3.46191 12.0205C2.35734 12.0205 1.46191 11.1251 1.46191 10.0205L1.46191 2C1.46191 0.895431 2.35734 -3.91405e-08 3.46191 -8.74228e-08L13.4619 -5.24537e-07C14.5665 -5.72819e-07 15.4619 0.89543 15.4619 2L15.4619 10.0205C15.4619 11.1251 14.5665 12.0205 13.4619 12.0205L3.46191 12.0205Z"/>
-</mask>
-<path d="M3.46191 12.0205C1.25278 12.0205 -0.538086 10.2296 -0.538086 8.02051L-0.538086 2C-0.538086 -0.209139 1.25277 -2 3.46191 -2L3.46191 2L3.46191 10.0205C3.46191 11.1251 3.46191 12.0205 3.46191 12.0205ZM13.4619 -2C15.6711 -2 17.4619 -0.20914 17.4619 2L17.4619 8.02051C17.4619 10.2296 15.6711 12.0205 13.4619 12.0205C13.4619 12.0205 13.4619 11.1251 13.4619 10.0205L13.4619 2L13.4619 -2ZM13.4619 2M15.4619 12.0205L1.46191 12.0205L15.4619 12.0205M-0.538086 2C-0.538086 -0.209139 1.25277 -2 3.46191 -2L13.4619 -2C15.6711 -2 17.4619 -0.20914 17.4619 2L13.4619 2L3.46191 2L-0.538086 2Z" fill="currentColor" mask="url(#path-2-inside-1_0_1)"/>
+<rect x="1" y="1" width="14.5" height="11" rx="1" stroke="currentColor" stroke-width="2.6"/>
+<rect x="1" y="14.6587" width="23" height="12" rx="1" stroke="currentColor" stroke-width="2.6"/>
 </svg>
 
             </span>
@@ -238,6 +235,7 @@
     });
   }
 
+  const editorStage = document.getElementById("editor-stage");
   const editorViewport = document.getElementById("editor-viewport");
   const editorImage = document.getElementById("editor-image");
   const editorGrid = document.getElementById("editor-grid");
@@ -272,6 +270,10 @@
   let dragStartY = 0;
   let dragStartPanX = 0;
   let dragStartPanY = 0;
+  const activeTouchPointers = new Map();
+  let isPinchZooming = false;
+  let pinchStartDistance = 0;
+  let pinchStartZoomValue = 0;
   const ROTATE_SNAP_DEGREES = 2;
 
   function openImageDB() {
@@ -639,10 +641,34 @@ function bindHints() {
 
   function updateStageRatio() {
     const { renderRows, renderCols } = getRenderDimensions();
-    const longestSide = Math.max(renderRows, renderCols) || 1;
+    const renderRatio = (renderCols && renderRows) ? renderCols / renderRows : 1;
+    if (editorStage) {
+      const stageStyles = window.getComputedStyle(editorStage);
+      const paddingLeft = parseFloat(stageStyles.paddingLeft) || 0;
+      const paddingRight = parseFloat(stageStyles.paddingRight) || 0;
+      const paddingTop = parseFloat(stageStyles.paddingTop) || 0;
+      const paddingBottom = parseFloat(stageStyles.paddingBottom) || 0;
 
-    editorViewport.style.width = `${(renderCols / longestSide) * 100}%`;
-    editorViewport.style.height = `${(renderRows / longestSide) * 100}%`;
+      const stageParentWidth = editorStage.parentElement
+        ? editorStage.parentElement.clientWidth
+        : editorStage.clientWidth;
+
+      const availableWidth = Math.max(1, stageParentWidth || editorStage.clientWidth || 0);
+      const maxStageWidth = window.innerWidth <= 1000
+        ? availableWidth
+        : Math.min(availableWidth, 550);
+      const viewportWidth = Math.max(1, Math.round(maxStageWidth - paddingLeft - paddingRight));
+      const viewportHeight = Math.max(1, Math.round(viewportWidth / renderRatio));
+      const stageWidth = Math.round(viewportWidth + paddingLeft + paddingRight);
+      const stageHeight = Math.round(viewportHeight + paddingTop + paddingBottom);
+
+      editorStage.style.width = `${stageWidth}px`;
+      editorStage.style.height = `${stageHeight}px`;
+      editorStage.style.aspectRatio = "auto";
+      editorViewport.style.width = `${viewportWidth}px`;
+      editorViewport.style.height = `${viewportHeight}px`;
+    }
+
     editorViewport.style.aspectRatio = `${renderCols} / ${renderRows}`;
   }
 
@@ -758,6 +784,68 @@ function bindHints() {
     return editorImage.classList.contains("is-visible") && Boolean(editorImage.src);
   }
 
+  function clampZoomValue(value) {
+    const minZoomValue = Number(zoomRange.min);
+    const maxZoomValue = Number(zoomRange.max);
+    return Math.min(maxZoomValue, Math.max(minZoomValue, value));
+  }
+
+  function getTouchDistance(firstPoint, secondPoint) {
+    const deltaX = secondPoint.x - firstPoint.x;
+    const deltaY = secondPoint.y - firstPoint.y;
+    return Math.hypot(deltaX, deltaY);
+  }
+
+  function resetTouchGestures() {
+    activeTouchPointers.clear();
+    isPinchZooming = false;
+    pinchStartDistance = 0;
+    pinchStartZoomValue = clampZoomValue(Number(zoomRange.value) || Number(zoomRange.min) || 100);
+  }
+
+  function startPinchZoomGesture() {
+    const touchPoints = Array.from(activeTouchPointers.values());
+    if (touchPoints.length < 2) {
+      return;
+    }
+
+    const distance = getTouchDistance(touchPoints[0], touchPoints[1]);
+    if (!distance) {
+      return;
+    }
+
+    finishImageDrag();
+    isPinchZooming = true;
+    pinchStartDistance = distance;
+    pinchStartZoomValue = clampZoomValue(Number(zoomRange.value) || Number(zoomRange.min) || 100);
+  }
+
+  function updatePinchZoomGesture() {
+    if (!isPinchZooming) {
+      return;
+    }
+
+    const touchPoints = Array.from(activeTouchPointers.values());
+    if (touchPoints.length < 2 || !pinchStartDistance) {
+      return;
+    }
+
+    const currentDistance = getTouchDistance(touchPoints[0], touchPoints[1]);
+    if (!currentDistance) {
+      return;
+    }
+
+    const ratio = currentDistance / pinchStartDistance;
+    const nextZoomValue = clampZoomValue(Math.round(pinchStartZoomValue * ratio));
+
+    if (nextZoomValue === Number(zoomRange.value)) {
+      return;
+    }
+
+    zoomRange.value = String(nextZoomValue);
+    updateImageTransform();
+  }
+
   function finishImageDrag() {
     if (!isImageDragging) {
       return;
@@ -770,6 +858,20 @@ function bindHints() {
 
   function handleImageDragStart(event) {
     if (!canDragImage()) {
+      return;
+    }
+
+    if (event.pointerType === "touch") {
+      activeTouchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+      if (activeTouchPointers.size >= 2) {
+        event.preventDefault();
+        startPinchZoomGesture();
+        return;
+      }
+    }
+
+    if (isPinchZooming) {
       return;
     }
 
@@ -800,6 +902,21 @@ function bindHints() {
   }
 
   function handleImageDragMove(event) {
+    if (event.pointerType === "touch" && activeTouchPointers.has(event.pointerId)) {
+      activeTouchPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+      if (activeTouchPointers.size >= 2 || isPinchZooming) {
+        event.preventDefault();
+
+        if (!isPinchZooming) {
+          startPinchZoomGesture();
+        }
+
+        updatePinchZoomGesture();
+        return;
+      }
+    }
+
     if (!isImageDragging || event.pointerId !== dragPointerId) {
       return;
     }
@@ -817,6 +934,23 @@ function bindHints() {
   }
 
   function handleImageDragEnd(event) {
+    if (event.pointerType === "touch") {
+      activeTouchPointers.delete(event.pointerId);
+
+      if (isPinchZooming) {
+        if (activeTouchPointers.size >= 2) {
+          const touchPoints = Array.from(activeTouchPointers.values());
+          const distance = getTouchDistance(touchPoints[0], touchPoints[1]);
+          pinchStartDistance = distance || pinchStartDistance;
+          pinchStartZoomValue = clampZoomValue(Number(zoomRange.value) || Number(zoomRange.min) || 100);
+        } else {
+          isPinchZooming = false;
+          pinchStartDistance = 0;
+          pinchStartZoomValue = clampZoomValue(Number(zoomRange.value) || Number(zoomRange.min) || 100);
+        }
+      }
+    }
+
     if (dragPointerId !== null && event.pointerId !== dragPointerId) {
       return;
     }
@@ -836,6 +970,7 @@ function bindHints() {
     if (!src) {
       panX = 0;
       panY = 0;
+      resetTouchGestures();
       finishImageDrag();
       editorImage.removeAttribute("src");
       editorImage.classList.remove("is-visible");
@@ -852,6 +987,7 @@ function bindHints() {
 
     panX = 0;
     panY = 0;
+    resetTouchGestures();
     finishImageDrag();
     editorImage.src = src;
     editorImage.classList.add("is-visible");
@@ -1015,7 +1151,9 @@ function bindHints() {
   window.addEventListener("pointerup", handleImageDragEnd);
   window.addEventListener("pointercancel", handleImageDragEnd);
   window.addEventListener("resize", () => {
+    resetTouchGestures();
     finishImageDrag();
+    updateStageRatio();
     updateImageTransform();
   });
 
@@ -1029,6 +1167,7 @@ function bindHints() {
   });
 
   window.addEventListener("beforeunload", () => {
+    resetTouchGestures();
     finishImageDrag();
 
     if (editedSnapshotTimer) {

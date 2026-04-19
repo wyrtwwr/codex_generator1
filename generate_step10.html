@@ -45,6 +45,7 @@
           type="email"
           inputmode="email"
           autocomplete="email"
+          required
           placeholder="Введите E-mail"
           aria-label="Введите E-mail"
         >
@@ -171,6 +172,37 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(value || "").trim());
   }
 
+  function setEmailFieldError(message = "") {
+    if (!emailInput) return;
+
+    const hasError = Boolean(message);
+    emailInput.classList.toggle("is-invalid", hasError);
+    emailInput.setAttribute("aria-invalid", String(hasError));
+    emailInput.setCustomValidity(message);
+  }
+
+  function showEmailValidationError() {
+    if (!emailInput) return;
+
+    const value = String(emailInput.value || "").trim();
+    let errorMessage = "";
+
+    if (!value) {
+      errorMessage = "Введите E-mail";
+    } else if (!isValidEmail(value)) {
+      errorMessage = "Введите корректный E-mail";
+    }
+
+    if (!errorMessage) {
+      setEmailFieldError("");
+      return;
+    }
+
+    setEmailFieldError(errorMessage);
+    emailInput.reportValidity();
+    emailInput.focus();
+  }
+
   function setSkipHintVisible(isVisible) {
     if (!skipHint || !skipHintBackdrop) return;
 
@@ -197,7 +229,8 @@
     const isValid = isValidEmail(emailInput.value);
     const canContinue = isValid || isSkipSendingApproved;
 
-    continueButton.classList.toggle("is-active", canContinue);
+    setEmailFieldError("");
+    continueButton.classList.toggle("is-active", isSkipSendingApproved);
     continueButton.setAttribute("aria-disabled", String(!canContinue));
     sendEmailButton.setAttribute("aria-disabled", String(!isValid));
 
@@ -215,7 +248,7 @@
   if (sendEmailButton) {
     sendEmailButton.addEventListener("click", () => {
       if (!isValidEmail(emailInput.value)) {
-        openSkipHint();
+        showEmailValidationError();
         return;
       }
 
@@ -242,8 +275,9 @@
 
   if (skipEmailButton) {
     skipEmailButton.addEventListener("click", () => {
-      if (!isSkipSendingApproved) {
-        openSkipHint();
+      setSkipHintVisible(false);
+      if (continueButton) {
+        continueButton.focus();
       }
     });
   }

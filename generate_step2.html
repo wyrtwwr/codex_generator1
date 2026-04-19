@@ -212,6 +212,7 @@
     L: 2,
     XL: 1
   };
+  const DEFAULT_SET_COUNT = 1;
 
   let currentIndex = 0;
   let selectedSize = null;
@@ -306,12 +307,24 @@
     clearCardActive();
     card.classList.add("is-active");
 
+    clearCountActive();
+    selectedCount = null;
     updateAvailableCounts(selectedSize);
+
+    const defaultCountButton = [...countButtons].find(
+      (btn) => Number(btn.dataset.count) === DEFAULT_SET_COUNT && !btn.disabled
+    );
+
+    if (defaultCountButton) {
+      selectCount(defaultCountButton, save);
+    }
+
     updateSlider();
 
     if (save) {
       localStorage.setItem(STORAGE_KEYS.setSize, selectedSize);
       localStorage.setItem(STORAGE_KEYS.setIndex, String(index));
+      localStorage.removeItem(STORAGE_KEYS.canvasSize);
     }
 
     updateNextAvailability();
@@ -327,6 +340,7 @@
 
     if (save) {
       localStorage.setItem(STORAGE_KEYS.setCount, String(selectedCount));
+      localStorage.removeItem(STORAGE_KEYS.canvasSize);
     }
 
     updateNextAvailability();
