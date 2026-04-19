@@ -75,7 +75,7 @@ body {
 
 .editor-slider__input {
   width: 100%;
-  max-width: 355px;
+  max-width: 457px;
   accent-color: #bf1f32;
   cursor: pointer;
 }
@@ -100,7 +100,7 @@ body {
 
 .editor-stage {
   position: relative;
-  width: min(100%, 460px);
+  width: min(100%, 550px);
   aspect-ratio: 1 / 1;
   margin: 0 auto;
   padding: 26px;
@@ -920,11 +920,11 @@ body.editor-hints-mobile-open {
   }
 
   .editor-slider__input {
-    max-width: 320px;
+    max-width: 457px;
   }
 
   .editor-stage {
-    width: min(100%, 460px);
+    width: min(100%, 550px);
     padding: 18px;
   }
 
@@ -1029,12 +1029,12 @@ body.editor-hints-mobile-open {
   }
 
   .editor-stage {
-    width: min(100%, 460px);
+    width: min(100%, 550px);
     padding: 16px;
   }
 
   .editor-slider__input {
-    max-width: 290px;
+    max-width: 457px;
   }
 
   .editor-tool__icon {

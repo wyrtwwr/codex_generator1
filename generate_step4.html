@@ -85,7 +85,7 @@
   </div>
 
   <div class="code-step__actions upload-step__actions">
-    <a href="generate_step3.html">
+    <a href="generate_step3.html" id="upload-back-link">
       <div class="step-btn step-btn--back">
         <button class="step-btn__icon step-btn__icon--dark" type="button" aria-label="Назад">
           <svg width="41" height="23" viewBox="0 0 41 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -174,7 +174,9 @@
 
   const STORAGE_KEYS = {
     uploadedImageName: "mozle_uploaded_image_name",
-    uploadedImageFallback: "mozle_uploaded_image_data"
+    uploadedImageFallback: "mozle_uploaded_image_data",
+    setSize: "mozle_set_size",
+    setCount: "mozle_set_count"
   };
 
   const IMAGE_DB_CONFIG = {
@@ -188,7 +190,21 @@
   const uploadText = document.getElementById("upload-step-text");
   const uploadLimitText = document.getElementById("upload-limit-text");
   const uploadAction = document.getElementById("upload-action");
+  const backLink = document.getElementById("upload-back-link");
   const nextLink = document.getElementById("upload-next-link");
+
+  function updateBackLink() {
+    if (!backLink) return;
+
+    const savedSet = localStorage.getItem(STORAGE_KEYS.setSize);
+    const savedCount = localStorage.getItem(STORAGE_KEYS.setCount);
+    const shouldReturnToStep2 = savedSet === "S" && savedCount === "1";
+
+    backLink.setAttribute(
+      "href",
+      shouldReturnToStep2 ? "generate_step2.html" : "generate_step3.html"
+    );
+  }
 
   function setNextAvailability(isEnabled) {
     if (!nextLink) return;
@@ -303,6 +319,7 @@
 
   setNextAvailability(false);
   setUploadActionState(false);
+  updateBackLink();
   prepareStoredImage();
 
   if (uploadInput) {
