@@ -288,6 +288,7 @@
 
   const burger = document.getElementById("burger");
   const menu = document.getElementById("menu2");
+  const paletteRow = document.querySelector(".palette-row");
   const thumbsArea = document.querySelector(".thumbs-area");
   const previewWrap = document.querySelector(".select-step__preview-wrap");
   const previewImage = document.getElementById("step8-preview-image");
@@ -331,25 +332,69 @@
   }
 
   function applyThumbAspectRatio(renderCols, renderRows) {
-    const ratio = renderCols / renderRows;
     const isMobileViewport = window.innerWidth <= 1000;
-    const minThumbWidth = isMobileViewport ? 58 : 76;
+    const isLandscapePreview = renderCols >= renderRows;
+    const mobileShortSide = 92;
+    const mobileLongSide = Math.round((229 / 150) * mobileShortSide);
+
+    const thumbWidth = isMobileViewport
+      ? (isLandscapePreview ? mobileLongSide : mobileShortSide)
+      : (isLandscapePreview ? 229 : 150);
+    const thumbHeight = isMobileViewport
+      ? (isLandscapePreview ? mobileShortSide : mobileLongSide)
+      : (isLandscapePreview ? 150 : 229);
 
     document.querySelectorAll(".thumb-card").forEach((card) => {
-      const baseHeight = Number.parseFloat(window.getComputedStyle(card).height);
-      if (!Number.isFinite(baseHeight) || baseHeight <= 0) return;
-
-      const targetWidth = Math.max(minThumbWidth, Math.round(baseHeight * ratio));
-      card.style.width = `${targetWidth}px`;
-      card.style.minWidth = `${targetWidth}px`;
-      card.style.flex = `0 0 ${targetWidth}px`;
-      card.style.aspectRatio = `${renderCols} / ${renderRows}`;
+      card.style.width = `${thumbWidth}px`;
+      card.style.height = `${thumbHeight}px`;
+      card.style.minWidth = `${thumbWidth}px`;
+      card.style.flex = `0 0 ${thumbWidth}px`;
+      card.style.aspectRatio = "auto";
 
       const image = card.querySelector(".thumb-card__image");
       if (image) {
-        image.style.aspectRatio = `${renderCols} / ${renderRows}`;
+        image.style.width = "100%";
+        image.style.height = "100%";
+        image.style.aspectRatio = "auto";
       }
     });
+  }
+
+  function applyPreviewWindowSize(renderCols, renderRows) {
+    if (!previewWrap) return;
+
+    const longerSide = Math.max(renderCols, renderRows) || 1;
+    const shorterSide = Math.min(renderCols, renderRows) || 1;
+    const baseLandscapeRatio = longerSide / shorterSide;
+    const isLandscapePreview = renderCols >= renderRows;
+
+    const parentWidth = previewWrap.parentElement
+      ? previewWrap.parentElement.clientWidth
+      : previewWrap.clientWidth;
+    const maxLandscapeWidth = window.innerWidth <= 1000
+      ? Math.max(1, parentWidth || 1)
+      : Math.min(500, Math.max(1, parentWidth || 500));
+
+    const baseLandscapeWidth = Math.round(maxLandscapeWidth);
+    const baseLandscapeHeight = Math.max(1, Math.round(baseLandscapeWidth / baseLandscapeRatio));
+
+    const previewWidth = isLandscapePreview ? baseLandscapeWidth : baseLandscapeHeight;
+    const previewHeight = isLandscapePreview ? baseLandscapeHeight : baseLandscapeWidth;
+
+    previewWrap.style.width = `${previewWidth}px`;
+    previewWrap.style.maxWidth = "100%";
+    previewWrap.style.height = `${previewHeight}px`;
+    previewWrap.style.aspectRatio = "auto";
+  }
+
+  function syncPaletteRowWidthToPreview() {
+    if (!paletteRow || !previewWrap) return;
+
+    const previewWidth = Math.round(previewWrap.getBoundingClientRect().width || 0);
+    if (!previewWidth) return;
+
+    paletteRow.style.width = `${previewWidth}px`;
+    paletteRow.style.maxWidth = `${previewWidth}px`;
   }
 
   function syncThumbTrackInsets() {
@@ -373,9 +418,8 @@
   function applyCanvasAspectRatio() {
     const { renderRows, renderCols } = getRenderDimensions();
 
-    if (previewWrap) {
-      previewWrap.style.aspectRatio = `${renderCols} / ${renderRows}`;
-    }
+    applyPreviewWindowSize(renderCols, renderRows);
+    syncPaletteRowWidthToPreview();
 
     applyThumbAspectRatio(renderCols, renderRows);
     syncThumbTrackInsets();

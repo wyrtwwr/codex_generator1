@@ -189,38 +189,26 @@ body {
 .editor-stage__line--horizontal {
   left: 0;
   width: 100%;
-  border-top: 4px dashed rgba(255, 255, 255, 0.86);
-  transform: translateY(-2px);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .editor-stage__line--vertical {
   top: 0;
   height: 100%;
-  border-left: 4px dashed rgba(255, 255, 255, 0.86);
-  transform: translateX(-2px);
+  width: 2px;
+  background: rgba(255, 255, 255, 0.86);
 }
 
 @media (min-width: 1001px) {
   .editor-stage__line--horizontal {
     height: 2px;
-    border-top: 0;
-    transform: translateY(-1px);
-    background: repeating-linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.86) 0 20px,
-      transparent 20px 32px
-    );
+    background: rgba(255, 255, 255, 0.86);
   }
 
   .editor-stage__line--vertical {
     width: 2px;
-    border-left: 0;
-    transform: translateX(-1px);
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.86) 0 20px,
-      transparent 20px 32px
-    );
+    background: rgba(255, 255, 255, 0.86);
   }
 }
 
@@ -625,24 +613,12 @@ body.editor-hints-mobile-open {
 
   .editor-stage__line--horizontal {
     height: 2px;
-    border-top: 0;
-    transform: translateY(-1px);
-    background: repeating-linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.86) 0 24px,
-      transparent 24px 36px
-    );
+    background: rgba(255, 255, 255, 0.86);
   }
 
   .editor-stage__line--vertical {
     width: 2px;
-    border-left: 0;
-    transform: translateX(-1px);
-    background: repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.86) 0 24px,
-      transparent 24px 36px
-    );
+    background: rgba(255, 255, 255, 0.86);
   }
 
   .editor-stage__empty {

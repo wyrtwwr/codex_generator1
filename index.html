@@ -12,6 +12,27 @@
     <link rel="stylesheet" href="style/style_generate.css">
     <link rel="stylesheet" href="style/style_generate_1000.css">
     <style>
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page {
+        flex: 1 0 auto;
+        margin: 0 auto;
+      }
+
+      .site-footer {
+        margin-top: auto;
+      }
+
       .code-step__actions a.is-disabled {
         cursor: not-allowed;
       }

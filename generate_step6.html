@@ -71,9 +71,11 @@
         <div class="editor-side__tool-group editor-side__tool-group--orientation" data-hint-group="orientation">
           <button class="editor-tool editor-tool--outline" id="orientation-toggle" type="button" data-hint-trigger="orientation">
             <span class="editor-tool__icon" aria-hidden="true">
-         <svg width="25" height="28" viewBox="0 0 25 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="1" y="1" width="14.5" height="11" rx="1" stroke="currentColor" stroke-width="2.6"/>
-<rect x="1" y="14.6587" width="23" height="12" rx="1" stroke="currentColor" stroke-width="2.6"/>
+<svg width="24" height="20" viewBox="0 0 131 106" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M78.5385 98.4995L78.5385 8.99985C78.5385 6.23841 76.2999 3.99984 73.5384 3.99986L8.9999 4.00028C6.23849 4.0003 3.99993 6.23887 3.99993 9.00028L3.99994 97.0001C3.99994 99.7615 6.23854 102 8.99997 102L121.034 101.999C123.795 101.999 126.034 99.7608 126.034 96.9994L126.034 32.4995C126.034 29.7381 123.795 27.4995 121.034 27.4995L78.5385 27.4998" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+<line x1="19.0332" y1="34.4995" x2="65.0332" y2="34.4995" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+<line x1="19.0332" y1="53.4995" x2="65.0332" y2="53.4995" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+<line x1="19.0332" y1="70.4995" x2="65.0332" y2="70.4995" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
 </svg>
 
             </span>
@@ -640,8 +642,13 @@ function bindHints() {
   }
 
   function updateStageRatio() {
+    const { rows, cols } = parseFormat(currentFormat);
     const { renderRows, renderCols } = getRenderDimensions();
-    const renderRatio = (renderCols && renderRows) ? renderCols / renderRows : 1;
+    const isPortrait = currentOrientation === "portrait";
+    const longerSide = Math.max(rows, cols) || 1;
+    const shorterSide = Math.min(rows, cols) || 1;
+    const baseLandscapeRatio = longerSide / shorterSide;
+
     if (editorStage) {
       const stageStyles = window.getComputedStyle(editorStage);
       const paddingLeft = parseFloat(stageStyles.paddingLeft) || 0;
@@ -657,8 +664,20 @@ function bindHints() {
       const maxStageWidth = window.innerWidth <= 1000
         ? availableWidth
         : Math.min(availableWidth, 550);
-      const viewportWidth = Math.max(1, Math.round(maxStageWidth - paddingLeft - paddingRight));
-      const viewportHeight = Math.max(1, Math.round(viewportWidth / renderRatio));
+      const baseLandscapeViewportWidth = Math.max(
+        1,
+        Math.round(maxStageWidth - paddingLeft - paddingRight)
+      );
+      const baseLandscapeViewportHeight = Math.max(
+        1,
+        Math.round(baseLandscapeViewportWidth / baseLandscapeRatio)
+      );
+      const viewportWidth = isPortrait
+        ? baseLandscapeViewportHeight
+        : baseLandscapeViewportWidth;
+      const viewportHeight = isPortrait
+        ? baseLandscapeViewportWidth
+        : baseLandscapeViewportHeight;
       const stageWidth = Math.round(viewportWidth + paddingLeft + paddingRight);
       const stageHeight = Math.round(viewportHeight + paddingTop + paddingBottom);
 
@@ -674,20 +693,34 @@ function bindHints() {
 
   function renderGrid() {
     const { renderRows, renderCols } = getRenderDimensions();
+    const gridLineThicknessPx = 2;
+    const gridLineThickness = `${gridLineThicknessPx}px`;
 
     editorGrid.innerHTML = "";
 
     for (let row = 0; row <= renderRows; row++) {
       const line = document.createElement("span");
       line.className = "editor-stage__line editor-stage__line--horizontal";
-      line.style.top = `${(row / renderRows) * 100}%`;
+      if (row === 0) {
+        line.style.top = "0";
+      } else if (row === renderRows) {
+        line.style.top = `calc(100% - ${gridLineThickness})`;
+      } else {
+        line.style.top = `calc(${(row / renderRows) * 100}% - ${gridLineThicknessPx / 2}px)`;
+      }
       editorGrid.appendChild(line);
     }
 
     for (let col = 0; col <= renderCols; col++) {
       const line = document.createElement("span");
       line.className = "editor-stage__line editor-stage__line--vertical";
-      line.style.left = `${(col / renderCols) * 100}%`;
+      if (col === 0) {
+        line.style.left = "0";
+      } else if (col === renderCols) {
+        line.style.left = `calc(100% - ${gridLineThickness})`;
+      } else {
+        line.style.left = `calc(${(col / renderCols) * 100}% - ${gridLineThicknessPx / 2}px)`;
+      }
       editorGrid.appendChild(line);
     }
 
@@ -716,6 +749,26 @@ function bindHints() {
     };
   }
 
+  function updateImageBaseSize() {
+    const viewportWidth = editorViewport.clientWidth || 0;
+    const viewportHeight = editorViewport.clientHeight || 0;
+    const imageWidth = editorImage.naturalWidth || 0;
+    const imageHeight = editorImage.naturalHeight || 0;
+
+    if (!viewportWidth || !viewportHeight || !imageWidth || !imageHeight) {
+      editorImage.style.removeProperty("width");
+      editorImage.style.removeProperty("height");
+      return;
+    }
+
+    const baseScale = Math.max(viewportWidth / imageWidth, viewportHeight / imageHeight);
+    const drawWidth = imageWidth * baseScale;
+    const drawHeight = imageHeight * baseScale;
+
+    editorImage.style.width = `${drawWidth}px`;
+    editorImage.style.height = `${drawHeight}px`;
+  }
+
   function clampPanOffsets() {
     const { maxPanX, maxPanY } = getPanBounds();
     panX = Math.min(maxPanX, Math.max(-maxPanX, panX));
@@ -739,6 +792,7 @@ function bindHints() {
       }
     }
 
+    updateImageBaseSize();
     clampPanOffsets();
     editorImage.style.transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${zoom}) rotate(${rotate}deg)`;
     updateViewportDragState();
@@ -1070,10 +1124,7 @@ function bindHints() {
     orientationToggle.classList.toggle("is-active", !squareFormat && currentOrientation === "portrait");
     updateStageRatio();
     renderGrid();
-
-    if (editorImage.src) {
-      scheduleEditedSnapshotSave();
-    }
+    updateImageTransform();
   }
 
   orientationToggle.addEventListener("click", () => {
