@@ -333,31 +333,40 @@
 
   function applyThumbAspectRatio(renderCols, renderRows) {
     const isMobileViewport = window.innerWidth <= 1000;
-    const isLandscapePreview = renderCols >= renderRows;
+    const isLandscapePreview = renderCols > renderRows;
+    const isSquarePreview = renderCols === renderRows;
     const mobileShortSide = 92;
     const mobileLongSide = Math.round((229 / 150) * mobileShortSide);
 
-    const thumbWidth = isMobileViewport
-      ? (isLandscapePreview ? mobileLongSide : mobileShortSide)
-      : (isLandscapePreview ? 229 : 150);
-    const thumbHeight = isMobileViewport
-      ? (isLandscapePreview ? mobileShortSide : mobileLongSide)
-      : (isLandscapePreview ? 150 : 229);
+    const thumbWidth = isSquarePreview
+      ? (isMobileViewport ? mobileShortSide : 150)
+      : (isMobileViewport ? (isLandscapePreview ? mobileLongSide : mobileShortSide) : (isLandscapePreview ? 229 : 150));
+    const thumbHeight = isSquarePreview
+      ? (isMobileViewport ? mobileShortSide : 150)
+      : (isMobileViewport ? (isLandscapePreview ? mobileShortSide : mobileLongSide) : (isLandscapePreview ? 150 : 229));
 
     document.querySelectorAll(".thumb-card").forEach((card) => {
       card.style.width = `${thumbWidth}px`;
       card.style.height = `${thumbHeight}px`;
       card.style.minWidth = `${thumbWidth}px`;
       card.style.flex = `0 0 ${thumbWidth}px`;
-      card.style.aspectRatio = "auto";
 
       const image = card.querySelector(".thumb-card__image");
       if (image) {
         image.style.width = "100%";
         image.style.height = "100%";
-        image.style.aspectRatio = "auto";
       }
     });
+  }
+
+  function applyThumbsAreaVariant(renderCols, renderRows) {
+    if (!thumbsArea) return;
+
+    const isLandscape = renderCols > renderRows;
+    const isSquare = renderCols === renderRows;
+
+    thumbsArea.classList.toggle("is-landscape", isLandscape);
+    thumbsArea.classList.toggle("is-square", isSquare);
   }
 
   function applyPreviewWindowSize(renderCols, renderRows) {
@@ -387,39 +396,25 @@
     previewWrap.style.aspectRatio = "auto";
   }
 
-  function syncPaletteRowWidthToPreview() {
-    if (!paletteRow || !previewWrap) return;
-
-    const previewWidth = Math.round(previewWrap.getBoundingClientRect().width || 0);
-    if (!previewWidth) return;
-
-    paletteRow.style.width = `${previewWidth}px`;
-    paletteRow.style.maxWidth = `${previewWidth}px`;
+  function syncPaletteRowFixedWidth() {
+    if (!paletteRow) return;
+    paletteRow.style.width = "500px";
+    paletteRow.style.minWidth = "500px";
+    paletteRow.style.maxWidth = "500px";
   }
 
   function syncThumbTrackInsets() {
     if (!thumbsTrack) return;
-
-    const cards = Array.from(thumbsTrack.querySelectorAll(".thumb-card"));
-    if (!cards.length) return;
-
-    const style = window.getComputedStyle(thumbsTrack);
-    const gap = Number.parseFloat(style.columnGap || style.gap) || 0;
-    const totalCardsWidth = cards.reduce((sum, card) => sum + card.getBoundingClientRect().width, 0);
-    const totalGapsWidth = gap * Math.max(0, cards.length - 1);
-    const contentWidth = totalCardsWidth + totalGapsWidth;
-    const freeSpace = thumbsTrack.clientWidth - contentWidth;
-    const sideInset = Math.max(2, Math.floor(freeSpace / 2));
-
-    thumbsTrack.style.paddingLeft = `${sideInset}px`;
-    thumbsTrack.style.paddingRight = `${sideInset}px`;
+    thumbsTrack.style.paddingLeft = "0px";
+    thumbsTrack.style.paddingRight = "0px";
   }
 
   function applyCanvasAspectRatio() {
     const { renderRows, renderCols } = getRenderDimensions();
 
+    applyThumbsAreaVariant(renderCols, renderRows);
     applyPreviewWindowSize(renderCols, renderRows);
-    syncPaletteRowWidthToPreview();
+    syncPaletteRowFixedWidth();
 
     applyThumbAspectRatio(renderCols, renderRows);
     syncThumbTrackInsets();
@@ -565,9 +560,10 @@
     return Array.from(thumbsTrack.querySelectorAll("[data-toggle-item]"));
   }
 
-  function setActiveThumb(nextIndex) {
+  function setActiveThumb(nextIndex, options = {}) {
     const items = getThumbItems();
     if (!items.length) return;
+    const behavior = options.behavior || "smooth";
 
     const safeIndex = Math.max(0, Math.min(nextIndex, items.length - 1));
     items.forEach((item, index) => {
@@ -575,8 +571,8 @@
     });
 
     items[safeIndex].scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
+      behavior,
+      inline: "start",
       block: "nearest"
     });
   }
@@ -590,7 +586,7 @@
         const activeIndex = items.findIndex((item) => item.classList.contains("is-active"));
         const currentIndex = activeIndex >= 0 ? activeIndex : 0;
         const direction = button.getAttribute("data-scroll-thumbs") === "next" ? 1 : -1;
-        const nextIndex = (currentIndex + direction + items.length) % items.length;
+        const nextIndex = Math.max(0, Math.min(currentIndex + direction, items.length - 1));
 
         setActiveThumb(nextIndex);
       });
@@ -749,10 +745,7 @@
     bindHints();
     await applyStoredImage();
 
-    const initialThumbIndex = getThumbItems().findIndex((item) => item.classList.contains("is-active"));
-    if (initialThumbIndex >= 0) {
-      setActiveThumb(initialThumbIndex);
-    }
+    setActiveThumb(0, { behavior: "auto" });
 
     if (isMobileHintsMode()) {
       openHint("turbo", { force: true });
@@ -762,6 +755,9 @@
   window.addEventListener("resize", () => {
     syncThumbsPlacementByViewport();
     applyCanvasAspectRatio();
+    const items = getThumbItems();
+    const activeIndex = items.findIndex((item) => item.classList.contains("is-active"));
+    setActiveThumb(activeIndex >= 0 ? activeIndex : 0, { behavior: "auto" });
   });
 
   mobileHintsMedia.addEventListener("change", (event) => {
@@ -782,4 +778,3 @@
 </script>
 </body>
 </html>
-

@@ -43,8 +43,9 @@ body {
 }
 
 .palette-row {
-  width: 100%;
-  max-width: 430px;
+  width: 500px;
+  min-width: 500px;
+  max-width: 500px;
   display: flex;
   justify-content: space-between;
   gap: 0;
@@ -451,12 +452,16 @@ body.select-hints-mobile-open {
 }
 
 .thumbs-area {
-  width: min(100%, 1030px);
+  width: min(100%, 960px);
   margin: 22px auto 0;
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr) 42px;
   gap: 12px;
   align-items: center;
+}
+
+.thumbs-area.is-landscape {
+  width: min(100%, 1088px);
 }
 
 .thumbs-arrow {
@@ -477,7 +482,7 @@ body.select-hints-mobile-open {
 
 .thumbs-track {
   display: flex;
-  gap: 20px;
+  gap: 21px;
   overflow-x: auto;
   scrollbar-width: none;
   scroll-behavior: smooth;
@@ -508,6 +513,12 @@ body.select-hints-mobile-open {
   height: 100%;
   display: block;
   object-fit: cover;
+  object-position: center;
+}
+
+.thumbs-area.is-square .thumb-card,
+.thumbs-area.is-square .thumb-card__image {
+  aspect-ratio: 1 / 1;
 }
 
 .select-step__actions {
@@ -695,8 +706,9 @@ body.select-hints-mobile-open {
   }
 
   .palette-row {
-    width: min(100%, 330px);
-    max-width: 330px;
+    width: 500px;
+    min-width: 500px;
+    max-width: 500px;
     gap: 0;
     margin-bottom: 2px;
   }

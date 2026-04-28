@@ -1178,3 +1178,22 @@ body.editor-hints-mobile-open {
     width: min(269px, calc(100vw - 24px)) !important;
   }
 }
+
+.editor-tool__icon--orientation svg {
+  width: 30px;
+  height: 24px;
+}
+
+@media (max-width: 1000px) {
+  .editor-tool__icon--orientation svg {
+    width: 21px;
+    height: 17px;
+  }
+}
+
+@media (max-width: 389px) {
+  .editor-tool__icon--orientation svg {
+    width: 19px;
+    height: 15px;
+  }
+}
