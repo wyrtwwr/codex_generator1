@@ -39,12 +39,12 @@ body {
 }
 
 .select-step__main-column {
-  width: 123%;
+  width: 100%;
 }
 
 .palette-row {
-  width: 500px;
-  min-width: 500px;
+  width: min(100%, 500px);
+  min-width: 0;
   max-width: 500px;
   display: flex;
   justify-content: space-between;
@@ -176,6 +176,7 @@ body {
 .select-hint {
   position: absolute;
   width: 520px;
+  display: none;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -184,6 +185,7 @@ body {
 }
 
 .select-hint.is-visible {
+  display: block;
   pointer-events: auto;
   opacity: 1;
   visibility: visible;
@@ -706,9 +708,9 @@ body.select-hints-mobile-open {
   }
 
   .palette-row {
-    width: 500px;
-    min-width: 500px;
-    max-width: 500px;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
     gap: 0;
     margin-bottom: 2px;
   }

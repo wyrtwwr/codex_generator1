@@ -396,11 +396,11 @@
     previewWrap.style.aspectRatio = "auto";
   }
 
-  function syncPaletteRowFixedWidth() {
+  function syncPaletteRowResponsiveSize() {
     if (!paletteRow) return;
-    paletteRow.style.width = "500px";
-    paletteRow.style.minWidth = "500px";
-    paletteRow.style.maxWidth = "500px";
+    paletteRow.style.removeProperty("width");
+    paletteRow.style.removeProperty("min-width");
+    paletteRow.style.removeProperty("max-width");
   }
 
   function syncThumbTrackInsets() {
@@ -414,7 +414,7 @@
 
     applyThumbsAreaVariant(renderCols, renderRows);
     applyPreviewWindowSize(renderCols, renderRows);
-    syncPaletteRowFixedWidth();
+    syncPaletteRowResponsiveSize();
 
     applyThumbAspectRatio(renderCols, renderRows);
     syncThumbTrackInsets();
