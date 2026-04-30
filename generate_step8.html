@@ -333,28 +333,47 @@
 
   function applyThumbAspectRatio(renderCols, renderRows) {
     const isMobileViewport = window.innerWidth <= 1000;
-    const isLandscapePreview = renderCols > renderRows;
-    const isSquarePreview = renderCols === renderRows;
-    const mobileShortSide = 92;
-    const mobileLongSide = Math.round((229 / 150) * mobileShortSide);
+    const safeCols = Number.isFinite(renderCols) && renderCols > 0 ? renderCols : 1;
+    const safeRows = Number.isFinite(renderRows) && renderRows > 0 ? renderRows : 1;
+    const previewRatio = safeCols / safeRows;
+    const isLandscapePreview = previewRatio > 1;
+    const shortSide = isMobileViewport ? 92 : 150;
 
-    const thumbWidth = isSquarePreview
-      ? (isMobileViewport ? mobileShortSide : 150)
-      : (isMobileViewport ? (isLandscapePreview ? mobileLongSide : mobileShortSide) : (isLandscapePreview ? 229 : 150));
-    const thumbHeight = isSquarePreview
-      ? (isMobileViewport ? mobileShortSide : 150)
-      : (isMobileViewport ? (isLandscapePreview ? mobileShortSide : mobileLongSide) : (isLandscapePreview ? 150 : 229));
+    let thumbWidth = shortSide;
+    let thumbHeight = shortSide;
+
+    if (previewRatio > 1) {
+      thumbWidth = shortSide * previewRatio;
+    } else if (previewRatio < 1) {
+      thumbHeight = shortSide / previewRatio;
+    }
+
+    if (!isMobileViewport && isLandscapePreview && thumbsTrack) {
+      const trackStyles = window.getComputedStyle(thumbsTrack);
+      const thumbGap = Number.parseFloat(trackStyles.columnGap || trackStyles.gap || "0") || 0;
+      const visibleLandscapeThumbs = 4;
+      const trackWidth = thumbsTrack.clientWidth;
+      const totalGapsWidth = thumbGap * (visibleLandscapeThumbs - 1);
+      const availableWidth = trackWidth - totalGapsWidth;
+
+      if (trackWidth > 0 && availableWidth > 0) {
+        thumbWidth = availableWidth / visibleLandscapeThumbs;
+        thumbHeight = thumbWidth / previewRatio;
+      }
+    }
 
     document.querySelectorAll(".thumb-card").forEach((card) => {
-      card.style.width = `${thumbWidth}px`;
-      card.style.height = `${thumbHeight}px`;
-      card.style.minWidth = `${thumbWidth}px`;
-      card.style.flex = `0 0 ${thumbWidth}px`;
+      card.style.width = `${thumbWidth.toFixed(3)}px`;
+      card.style.height = `${thumbHeight.toFixed(3)}px`;
+      card.style.minWidth = `${thumbWidth.toFixed(3)}px`;
+      card.style.flex = `0 0 ${thumbWidth.toFixed(3)}px`;
+      card.style.aspectRatio = `${safeCols} / ${safeRows}`;
 
       const image = card.querySelector(".thumb-card__image");
       if (image) {
         image.style.width = "100%";
         image.style.height = "100%";
+        image.style.aspectRatio = `${safeCols} / ${safeRows}`;
       }
     });
   }
