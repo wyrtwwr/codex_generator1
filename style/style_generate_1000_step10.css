@@ -253,6 +253,8 @@ body.email-skip-hint-open {
   line-height: 1;
   font-weight: 700;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 }
 
 .email-action__icon {
@@ -307,11 +309,42 @@ body.email-skip-hint-open {
 
 .email-action--continue:hover .email-action__icon,
 .email-action--send:hover .email-action__icon {
-  transform: translateX(3px);
+  transform: translateX(4px);
 }
 
 .email-action--back:hover .email-action__icon {
-  transform: translateX(-3px);
+  transform: translateX(-4px);
+}
+
+.email-action__main::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.6) 50%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: skewX(-25deg);
+  pointer-events: none;
+}
+
+.email-action:hover .email-action__main::before {
+  animation: shine2 0.8s forwards;
+}
+
+.email-action:hover .email-action__main,
+.email-action:hover .email-action__icon {
+  filter: brightness(1.03);
+}
+
+.email-action[aria-disabled="true"]:not(.email-action--back):hover .email-action__main,
+.email-action[aria-disabled="true"]:not(.email-action--back):hover .email-action__icon {
+  filter: none;
 }
 
 .email-action--send[aria-disabled="false"] .email-action__main,
