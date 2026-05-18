@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>instructions_step2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style/style_generate.css">
+  <style>
+    body {
+      background: #ededed;
+      font-family: "Montserrat", sans-serif;
+      color: #111111;
+    }
+
+    .plate-step {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 26px 20px 18px;
+      box-sizing: border-box;
+    }
+
+    .plate-step__layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 285px;
+      gap: 34px;
+      align-items: start;
+      justify-content: center;
+    }
+
+    .board-wrap {
+      position: relative;
+      width: 352px;
+      margin: 0 auto;
+      padding: 18px;
+      box-sizing: content-box;
+    }
+
+    .board-axis {
+      position: absolute;
+      color: #6d6d6d;
+      font-size: 14px;
+      line-height: 1;
+      display: grid;
+    }
+
+    .board-axis span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+    }
+
+    .board-axis--top,
+    .board-axis--bottom {
+      left: 18px;
+      width: 352px;
+      grid-template-columns: repeat(16, 1fr);
+      column-gap: 2px;
+    }
+
+    .board-axis--top {
+      top: -8px;
+    }
+
+    .board-axis--bottom {
+      bottom: -8px;
+    }
+
+    .board-axis--left,
+    .board-axis--right {
+      top: 18px;
+      height: 352px;
+      grid-template-rows: repeat(16, 1fr);
+      row-gap: 2px;
+    }
+
+    .board-axis--left {
+      left: -8px;
+    }
+
+    .board-axis--right {
+      right: -8px;
+    }
+
+    .mosaic-board {
+      width: 352px;
+      height: 352px;
+      background: #c5c5c5;
+      border: 1px solid #8e8e8e;
+      display: grid;
+      grid-template-columns: repeat(16, 20px);
+      grid-template-rows: repeat(16, 20px);
+      gap: 2px;
+      padding: 1px;
+      box-sizing: border-box;
+    }
+
+    .mosaic-cell {
+      position: relative;
+      border: 1px solid rgba(0, 0, 0, 0.17);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .mosaic-cell::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      top: 4px;
+      left: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 0 1px rgba(0, 0, 0, 0.35);
+    }
+
+    .shade-0 { background: #ececec; }
+    .shade-1 { background: #d8d8d8; }
+    .shade-2 { background: #c2c2c2; }
+    .shade-3 { background: #ababab; }
+    .shade-4 { background: #949494; }
+    .shade-5 { background: #7e7e7e; }
+    .shade-6 { background: #666666; }
+    .shade-7 { background: #4f4f4f; }
+    .shade-8 { background: #383838; }
+    .shade-9 { background: #222222; }
+
+    .panel-title,
+    .panel-subtitle {
+      margin: 0;
+      text-align: center;
+      font-size: 28px;
+      line-height: 1.12;
+      font-weight: 700;
+    }
+
+    .panel-subtitle {
+      margin-top: 18px;
+      font-size: 27px;
+    }
+
+    .plate-selector {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .selector-arrow {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1.5px solid #202020;
+      color: #1d1d1d;
+      background: #efefef;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .plate-preview {
+      --cols: 3;
+      --rows: 4;
+      --cell-w: 30px;
+      --cell-h: 38px;
+      --plate-photo: url("img/block6_img.png");
+      width: calc(var(--cols) * var(--cell-w));
+      height: calc(var(--rows) * var(--cell-h));
+      border: 2px solid #8f1625;
+      background: #2f2f2f;
+      display: grid;
+      grid-template-columns: repeat(var(--cols), 1fr);
+      grid-template-rows: repeat(var(--rows), 1fr);
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .plate-preview::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: var(--plate-photo);
+      background-size: cover;
+      background-position: center;
+      filter: grayscale(1) contrast(1.12);
+      transform: scale(1.02);
+      z-index: 0;
+    }
+
+    .plate-preview::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, rgba(0, 0, 0, 0.06) 100%);
+      z-index: 0;
+    }
+
+    .plate-fragment {
+      border: 1px solid #8f1625;
+      position: relative;
+      background: transparent;
+      z-index: 1;
+    }
+
+    .plate-fragment::after {
+      content: attr(data-n);
+      position: absolute;
+      left: 4px;
+      top: 3px;
+      color: #f4f4f4;
+      font-size: 9px;
+      line-height: 1;
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    }
+
+    .outline-btn {
+      margin: 12px auto 0;
+      width: 223px;
+      height: 44px;
+      border-radius: 999px;
+      border: 2px solid #171717;
+      background: #efefef;
+      color: #171717;
+      font-size: 15px;
+      line-height: 1;
+      font-weight: 600;
+      cursor: pointer;
+      display: block;
+    }
+
+    .zone-picker {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .zone-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 0;
+      padding: 0;
+      background: #898989;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .zone-btn.is-active {
+      background: #8f1625;
+    }
+
+    .zone-mark {
+      width: 29px;
+      height: 29px;
+      border: 1.5px solid #dcdcdc;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 1px;
+    }
+
+    .zone-mark span {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .zone-btn:nth-child(1) .zone-mark span:nth-child(1),
+    .zone-btn:nth-child(2) .zone-mark span:nth-child(2),
+    .zone-btn:nth-child(3) .zone-mark span:nth-child(3),
+    .zone-btn:nth-child(4) .zone-mark span:nth-child(4) {
+      background: #ffffff;
+    }
+
+    .mode-actions {
+      margin: 18px auto 0;
+      max-width: 500px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .mode-btn {
+      width: 100%;
+      height: 52px;
+      border-radius: 999px;
+      border: 2px solid #161616;
+      background: #efefef;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 600;
+      color: #161616;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .mode-actions .mode-btn:first-child {
+      max-width: 300px;
+      justify-self: end;
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+
+    .mode-actions .mode-btn:last-child {
+      max-width: 280px;
+      justify-self: start;
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+
+    .nav-actions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .nav-btn {
+      min-width: 160px;
+      height: 48px;
+      border-radius: 999px;
+      border: 0;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .nav-btn--back {
+      background: linear-gradient(180deg, #8d8d8d 0%, #6b6b6b 100%);
+    }
+
+    .nav-btn--next {
+      background: radial-gradient(315.13% 323.48% at 23.74% -32.66%, #bf1f32 0%, #590f17 100%);
+      border: 1.5px solid #161616;
+    }
+
+    .help-title {
+      margin: 16px 0 8px;
+      text-align: center;
+      font-size: 30px;
+      line-height: 1.1;
+      font-weight: 700;
+    }
+
+    .help-text {
+      margin: 0 auto;
+      max-width: 830px;
+      font-size: 18px;
+      line-height: 1.3;
+      font-weight: 500;
+      color: #131313;
+    }
+
+    @media (max-width: 1000px) {
+      .plate-step {
+        padding: 20px 14px 28px;
+      }
+
+      .plate-step__layout {
+        grid-template-columns: 1fr;
+        gap: 22px;
+      }
+
+      .board-wrap {
+        width: 280px;
+        padding: 14px;
+      }
+
+      .board-axis {
+        font-size: 11px;
+      }
+
+      .board-axis span {
+        width: 15px;
+        height: 15px;
+      }
+
+      .board-axis--top,
+      .board-axis--bottom {
+        left: 14px;
+        width: 280px;
+      }
+
+      .board-axis--left,
+      .board-axis--right {
+        top: 14px;
+        height: 280px;
+      }
+
+      .mosaic-board {
+        width: 280px;
+        height: 280px;
+        grid-template-columns: repeat(16, 16px);
+        grid-template-rows: repeat(16, 16px);
+        gap: 1px;
+      }
+
+      .mosaic-cell::after {
+        width: 8px;
+        height: 8px;
+        top: 3px;
+        left: 3px;
+      }
+
+      .panel-title,
+      .panel-subtitle {
+        font-size: 20px;
+      }
+
+      .panel-subtitle {
+        margin-top: 14px;
+      }
+
+      .outline-btn {
+        width: min(100%, 300px);
+        height: 44px;
+        font-size: 14px;
+      }
+
+      .plate-preview {
+        --cell-w: 27px;
+        --cell-h: 34px;
+      }
+
+      .mode-actions {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+        gap: 14px;
+      }
+
+      .mode-btn {
+        height: 48px;
+        font-size: 16px;
+      }
+
+      .mode-actions .mode-btn:first-child,
+      .mode-actions .mode-btn:last-child {
+        justify-self: center;
+      }
+
+      .nav-actions {
+        gap: 12px;
+      }
+
+      .nav-btn {
+        min-width: 130px;
+        height: 44px;
+        font-size: 16px;
+      }
+
+      .help-title {
+        font-size: 24px;
+      }
+
+      .help-text {
+        font-size: 14px;
+        line-height: 1.35;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="center_header">
+      <div class="logo_box">
+        <h3 class="PC_h3">+7 900 000-00-00</h3>
+        <img src="img/logo.png" alt="">
+        <h3 class="PC_h3">info@mozle.ru</h3>
+      </div>
+    </div>
+  </header>
+
+  <div class="menu_mobile">
+    <div class="center_header_mob">
+      <div class="logo_box_mob">
+        <img src="img/logo.png" alt="">
+      </div>
+    </div>
+  </div>
+
+  <div class="page">
+    <section class="plate-step">
+      <div class="plate-step__layout">
+        <div class="board-column">
+          <div class="board-wrap">
+            <div class="board-axis board-axis--top" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+            <div class="board-axis board-axis--left" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+            <div class="mosaic-board" id="mosaic-board" aria-label="Сетка фрагмента 16 на 16"></div>
+            <div class="board-axis board-axis--right" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+            <div class="board-axis board-axis--bottom" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-column">
+          <h2 class="panel-title">Выберете пластину основы</h2>
+
+          <div class="plate-selector" aria-label="Выбор пластины">
+            <button class="selector-arrow" type="button" aria-label="Предыдущая пластина">←</button>
+            <div class="plate-preview" id="plate-preview" aria-live="polite"></div>
+            <button class="selector-arrow" type="button" aria-label="Следующая пластина">→</button>
+          </div>
+
+          <button class="outline-btn" type="button">ПОСМОТРЕТЬ ОБЩИЙ ВИД</button>
+
+          <h3 class="panel-subtitle">Выберете область сборки<br>на пластине</h3>
+
+          <div class="zone-picker" aria-label="Область сборки">
+            <button class="zone-btn is-active" type="button" aria-label="Левая верхняя область">
+              <span class="zone-mark"><span></span><span></span><span></span><span></span></span>
+            </button>
+            <button class="zone-btn" type="button" aria-label="Правая верхняя область">
+              <span class="zone-mark"><span></span><span></span><span></span><span></span></span>
+            </button>
+            <button class="zone-btn" type="button" aria-label="Левая нижняя область">
+              <span class="zone-mark"><span></span><span></span><span></span><span></span></span>
+            </button>
+            <button class="zone-btn" type="button" aria-label="Правая нижняя область">
+              <span class="zone-mark"><span></span><span></span><span></span><span></span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mode-actions">
+        <button class="mode-btn" type="button">РЕЖИМ ОТОБРАЖЕНИЯ</button>
+        <button class="mode-btn" type="button">ОЧИСТИТЬ ПОЛЕ</button>
+      </div>
+
+      <div class="nav-actions">
+        <a class="nav-btn nav-btn--back" href="instructions_step1.html">НАЗАД</a>
+        <a class="nav-btn nav-btn--next" href="generate_step3.html">ВПЕРЁД</a>
+      </div>
+
+      <h4 class="help-title">Управление сборкой:</h4>
+      <p class="help-text">
+        Чтобы выбрать ячейку - нажмите на ячейку 1 раз<br>
+        Отметить собранный участок - кнопка РЕЖИМ ОТОБРАЖЕНИЯ<br>
+        Вернуться на 1 шаг назад - кнопка НАЗАД<br>
+        Продвинуться на 1 шаг - кнопка ВПЕРЁД<br>
+        Полностью очистить весь фрагмент - кнопка ОЧИСТИТЬ ПОЛЕ
+      </p>
+    </section>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <a href="/" class="brand-link">
+          <img class="footer_logo" src="img/logo.png" alt="">
+        </a>
+      </div>
+
+      <div class="footer-nav">
+        <ul class="footer-menu">
+          <li><a href="#">Каталог</a></li>
+          <li><a href="#">Получить инструкцию</a></li>
+          <li><a href="#">Загрузить фото</a></li>
+          <li><a href="#">Отзывы покупателей</a></li>
+          <li><a href="#">Дилерам и партнерам</a></li>
+          <li><a href="#">Контакты</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-legal">
+        <ul class="legal-links">
+          <li><a href="#">Политика конфиденциальности</a></li>
+          <li><a href="#">Политика использования файлов cookies</a></li>
+          <li><a href="#">Обработка персональных данных</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contacts">
+        <a href="tel:+79000000000" class="contact-phone">+7 900 000-00-00</a>
+        <a href="mailto:info@mozle.ru" class="contact-email">info@mozle.ru</a>
+        <address class="contact-address">
+          101000, г. Москва, ул. Тверская, д. 15/2, корп. 1, офис 177
+        </address>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="copyright">2025 © MozLe</p>
+    </div>
+  </footer>
+
+  <script>
+    const board = document.getElementById("mosaic-board");
+    const platePreview = document.getElementById("plate-preview");
+    const size = 16;
+    const STORAGE_KEYS = {
+      setSize: "mozle_set_size",
+      setIndex: "mozle_set_index",
+      uploadedImageFallback: "mozle_uploaded_image_data",
+      editedImageFallback: "mozle_edited_image_data"
+    };
+    const PREVIEW_LAYOUT_BY_SET = {
+      S: { rows: 2, cols: 2 },
+      M: { rows: 2, cols: 3 },
+      L: { rows: 3, cols: 3 },
+      XL: { rows: 3, cols: 4 }
+    };
+    const SIZE_BY_INDEX = ["S", "M", "L", "XL"];
+
+    function getSelectedSetSize() {
+      const storedSize = String(localStorage.getItem(STORAGE_KEYS.setSize) || "").toUpperCase();
+      if (PREVIEW_LAYOUT_BY_SET[storedSize]) return storedSize;
+
+      const indexRaw = localStorage.getItem(STORAGE_KEYS.setIndex);
+      const index = Number(indexRaw);
+      if (Number.isInteger(index) && SIZE_BY_INDEX[index]) {
+        return SIZE_BY_INDEX[index];
+      }
+
+      return "XL";
+    }
+
+    function renderPlatePreview() {
+      if (!platePreview) return;
+
+      const selectedSize = getSelectedSetSize();
+      const layout = PREVIEW_LAYOUT_BY_SET[selectedSize] || PREVIEW_LAYOUT_BY_SET.XL;
+      const cellsTotal = layout.rows * layout.cols;
+
+      platePreview.innerHTML = "";
+      platePreview.style.setProperty("--rows", String(layout.rows));
+      platePreview.style.setProperty("--cols", String(layout.cols));
+      platePreview.setAttribute("aria-label", `Пластина ${layout.rows}x${layout.cols} для набора ${selectedSize}`);
+
+      for (let i = 1; i <= cellsTotal; i += 1) {
+        const fragment = document.createElement("div");
+        fragment.className = "plate-fragment";
+        fragment.setAttribute("data-n", String(i));
+        platePreview.appendChild(fragment);
+      }
+    }
+
+    function applyPlatePreviewPhoto() {
+      if (!platePreview) return;
+
+      const editedPhoto = localStorage.getItem(STORAGE_KEYS.editedImageFallback);
+      const uploadedPhoto = localStorage.getItem(STORAGE_KEYS.uploadedImageFallback);
+      const photoSource = editedPhoto || uploadedPhoto;
+
+      if (photoSource) {
+        platePreview.style.setProperty("--plate-photo", `url("${photoSource}")`);
+      }
+    }
+
+    renderPlatePreview();
+    applyPlatePreviewPhoto();
+
+    for (let y = 0; y < size; y += 1) {
+      for (let x = 0; x < size; x += 1) {
+        let shade = Math.round((x / (size - 1)) * 8);
+
+        if (x < 4 && y < 3) shade = 0;
+        if (x >= 10 && y < 10) shade = Math.min(9, shade + 1);
+        if (y >= 9 && y <= 14 && x < 9) shade = Math.max(1, shade - 2);
+        if (x >= 7 && x <= 10 && y >= 11) shade = Math.min(9, shade + 1);
+        if ((x + y) % 5 === 0) shade = Math.max(0, shade - 1);
+        if ((x * 3 + y) % 7 === 0) shade = Math.min(9, shade + 1);
+
+        const cell = document.createElement("div");
+        cell.className = `mosaic-cell shade-${shade}`;
+        board.appendChild(cell);
+      }
+    }
+  </script>
+</body>
+</html>

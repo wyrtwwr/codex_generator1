@@ -382,25 +382,28 @@
 
       .instruction-step__top {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 25px;
       }
 
       .instruction-step__actions {
         padding-top: 0;
-        width: 269px;
+        width: min(294px, calc(100vw - 28px));
         margin: 0 auto;
-        align-items: stretch;
+        align-items: center;
+        gap: 20px;
       }
 
       .instruction-btn--pdf {
+        order: 2;
         width: 100%;
-        min-width: 100%;
+        min-width: 0;
         height: 52px;
         min-height: 52px;
         font-size: 15px;
       }
 
       .instruction-next-wrap {
+        order: 1;
         width: auto;
         min-height: 48px;
         align-self: center;
@@ -428,7 +431,9 @@
       }
 
       .instruction-step__title {
-        font-size: 28px;
+        max-width: 351px;
+        margin: 30px auto 30px;
+        font-size: 20px;
       }
 
       .instruction-step__share {
@@ -437,63 +442,127 @@
       }
 
       .share-link__button {
-        width: 100%;
-        max-width: 320px;
-        font-size: 20px;
+        width: min(100%, 294px);
+        min-height: 52px;
+        font-size: 16px;
       }
 
       .share-link__text {
-        font-size: 15px;
+        display: none;
       }
 
       .share-qr__caption {
-        font-size: 22px;
+        font-size: 20px;
+      }
+
+      .share-qr__image {
+        width: 210px;
+        height: 210px;
+        max-width: 210px;
+        margin: 5px auto 0;
       }
 
       .instruction-step__final {
-        font-size: 30px;
+        max-width: 347px;
+        margin: 13px auto 0;
+        font-size: 20px;
+      }
+
+      .site-footer {
+        margin-top: 0 !important;
       }
 
       .palette-block {
         width: 100%;
         min-width: 0;
-        max-width: 100%;
+        max-width: 340px;
+        margin-left: auto;
+        margin-right: auto;
         margin-bottom: 15px;
+        position: relative;
       }
 
       .palette-block__base {
-        font-size: 11px;
-        margin: 0 -15px 3px;
+        font-size: 15px;
+        margin: 0;
+        position: absolute;
+        left: 0;
+        top: 22px;
+        width: 64px;
+        text-align: center;
+        text-transform: lowercase;
       }
 
       .palette-row {
         width: 100%;
         min-width: 0;
         max-width: 100%;
-        gap: 0;
+        display: grid;
+        grid-template-columns: 64px repeat(3, minmax(0, 1fr));
+        grid-template-rows: repeat(2, auto);
+        column-gap: 16px;
+        row-gap: 6px;
+        justify-items: center;
+        align-items: start;
       }
 
       .palette-chip--a {
-        margin-right: 6px;
+        margin-right: 0;
       }
 
       .palette-chip__label {
-        font-size: 13px;
+        font-size: 20px;
       }
 
       .palette-chip__count {
-        font-size: 12px;
+        font-size: 16px;
       }
 
       .palette-chip__swatch {
-        width: 20px;
-        height: 20px;
+        width: 28px;
+        height: 28px;
       }
 
       .palette-chip__swatch::after {
-        top: 3px;
-        width: 9px;
-        height: 9px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+      }
+
+      .palette-row .palette-chip:nth-child(1) {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        align-self: center;
+      }
+
+      .palette-row .palette-chip:nth-child(2) {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .palette-row .palette-chip:nth-child(3) {
+        grid-column: 3;
+        grid-row: 1;
+      }
+
+      .palette-row .palette-chip:nth-child(4) {
+        grid-column: 4;
+        grid-row: 1;
+      }
+
+      .palette-row .palette-chip:nth-child(5) {
+        grid-column: 2;
+        grid-row: 2;
+      }
+
+      .palette-row .palette-chip:nth-child(6) {
+        grid-column: 3;
+        grid-row: 2;
+      }
+
+      .palette-row .palette-chip:nth-child(7) {
+        grid-column: 4;
+        grid-row: 2;
       }
 
       .instruction-photo {
@@ -510,7 +579,7 @@
 
     @media (max-width: 389px) {
       .instruction-step__actions {
-        width: min(269px, calc(100vw - 24px));
+        width: min(294px, calc(100vw - 24px));
       }
 
       .instruction-btn--pdf {
@@ -613,7 +682,7 @@
         <div class="instruction-step__actions">
           <a class="instruction-btn instruction-btn--pdf" href="#">ОТКРЫТЬ ИНСТРУКЦИЮ PDF</a>
 
-          <a class="instruction-next-wrap" href="#" aria-label="Вперёд">
+          <a class="instruction-next-wrap" href="instructions_step2.html" aria-label="Вперёд">
             <span class="instruction-btn instruction-btn--next">ВПЕРЁД</span>
             <span class="instruction-next-icon" aria-hidden="true">
               <svg viewBox="0 0 41 23" fill="none" xmlns="http://www.w3.org/2000/svg">
