@@ -28,7 +28,7 @@
 
     .plate-step__layout {
       display: grid;
-      grid-template-columns: 285px minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr) 285px;
       gap: 34px;
       align-items: start;
       justify-content: center;
@@ -332,8 +332,10 @@
 
     .mode-actions {
       margin: 35px auto 0;
-      display: flex;
-      justify-content: center;
+      max-width: 627px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
     }
 
     .mode-btn {
@@ -350,25 +352,30 @@
       cursor: pointer;
     }
 
-    .mode-actions--display {
-      max-width: 315px;
-    }
-
     .mode-actions--display .mode-btn {
+      width: 100%;
       max-width: 315px;
+      justify-self: end;
       padding-left: 35px;
       padding-right: 35px;
     }
 
-    .mode-actions--clear {
-      margin-top: 18px;
-      max-width: 295px;
-    }
-
     .mode-actions--clear .mode-btn {
+      width: 100%;
       max-width: 295px;
+      justify-self: start;
       padding-left: 30px;
       padding-right: 30px;
+    }
+
+    .mode-actions--display {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .mode-actions--clear {
+      display: flex;
+      justify-content: flex-start;
     }
 
     .nav-actions {
@@ -422,6 +429,10 @@
 
     .help-text__label {
       font-weight: 600;
+    }
+
+    .help-top-action {
+      display: none;
     }
 
     .outline-modal {
@@ -529,16 +540,27 @@
 
       .plate-step {
         padding: 20px 14px 28px;
+        display: flex;
+        flex-direction: column;
       }
 
       .plate-step__layout {
         grid-template-columns: 1fr;
         gap: 22px;
+        order: 1;
+      }
+
+      .panel-column {
+        order: 1;
+      }
+
+      .board-column {
+        order: 2;
       }
 
       .board-wrap {
-        --board-size: min(400px, calc(100vw - 56px));
-        --board-pad: 14px;
+        --board-size: min(320px, calc(90vw - 44px));
+        --board-pad: 13px;
         width: var(--board-size);
         padding: var(--board-pad);
       }
@@ -604,13 +626,29 @@
       }
 
       .mode-actions {
-        margin-top: 22px;
-        max-width: 340px;
+        display: contents;
+        margin-top: 0;
+        max-width: none;
+        gap: 0;
       }
 
       .mode-btn {
-        height: 48px;
-        font-size: 16px;
+        height: 50px;
+        font-size: 14px;
+      }
+
+      .mode-actions--display {
+        order: 3;
+        display: flex;
+        justify-content: center;
+        margin-top: 22px;
+      }
+
+      .mode-actions--clear {
+        order: 5;
+        display: flex;
+        justify-content: center;
+        margin-top: 14px;
       }
 
       .mode-actions--display .mode-btn,
@@ -622,6 +660,7 @@
       }
 
       .nav-actions {
+        order: 4;
         margin-top: 16px;
         flex-wrap: wrap;
         gap: 15px;
@@ -634,6 +673,7 @@
       }
 
       .help-title {
+        order: 6;
         margin: 30px 0 10px;
         max-width: 319px;
         margin-left: auto;
@@ -643,10 +683,31 @@
       }
 
       .help-text {
+        order: 7;
         margin: 0 auto;
         max-width: 319px;
         font-size: 14px;
         line-height: 1.3;
+      }
+
+      .help-top-action {
+        order: 8;
+        display: flex;
+        justify-content: center;
+        margin-top: 25px;
+      }
+
+      .help-top-action__btn {
+        width: min(100%, 245px);
+        max-width: 245px;
+        height: 50px;
+        font-size: 14px;
+        padding-left: 16px;
+        padding-right: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
       }
 
       .outline-modal__dialog {
@@ -731,8 +792,8 @@
       }
 
       .board-wrap {
-        --board-size: min(400px, calc(100vw - 40px));
-        --board-pad: 10px;
+        --board-size: min(320px, calc(90vw - 44px));
+        --board-pad: 13px;
       }
 
       .board-axis {
@@ -798,22 +859,22 @@
 
       .mode-btn {
         height: 50px;
-        font-size: 16px;
+        font-size: 14px;
       }
 
       .nav-btn {
-        min-width: 136px;
-        height: 48px;
+        min-width: 160px;
+        height: 44px;
         font-size: 16px;
       }
 
       .help-title {
-        margin: 20px 0 12px;
+        margin: 30px 0 10px;
         max-width: 319px;
         margin-left: auto;
         margin-right: auto;
         text-align: left;
-        font-size: 20px;
+        font-size: 17px;
       }
 
       .help-text {
@@ -821,6 +882,10 @@
         max-width: 319px;
         font-size: 14px;
         line-height: 1.3;
+      }
+
+      .help-top-action__btn {
+        max-width: 212px;
       }
 
       .logo_box_mob img {
@@ -840,48 +905,38 @@
       }
     }
 
-    @media (max-width: 450px) {
-      .board-wrap {
-        --board-size: min(400px, calc(100vw - 40px));
-        --board-pad: 8px;
-      }
-
-      .board-axis {
-        font-size: 9px;
-      }
-
-      .mode-actions {
-        margin-top: 18px;
-        max-width: 260px;
-      }
-
-      .mode-btn {
+    @media (max-width: 399px) {
+      .nav-btn {
+        min-width: 128px;
         height: 44px;
-        font-size: 14px;
+        font-size: 16px;
       }
+    }
 
+    @media (max-width: 389px) {
       .mode-actions--display .mode-btn,
       .mode-actions--clear .mode-btn {
-        width: min(100%, 220px);
-        max-width: 220px;
-        padding-left: 12px;
-        padding-right: 12px;
+        width: min(100%, 245px);
+        max-width: 212px;
+        padding-left: 16px;
+        padding-right: 16px;
       }
 
       .nav-actions {
-        margin-top: 12px;
-        gap: 10px;
+        order: 4;
+        margin-top: 16px;
+        flex-wrap: wrap;
+        gap: 15px;
       }
 
       .nav-btn {
-        min-width: 134px;
-        height: 40px;
         font-size: 14px;
       }
     }
+
   </style>
 </head>
-<body>
+<body id="page-top">
   <header>
     <div class="center_header">
       <div class="logo_box">
@@ -903,6 +958,24 @@
   <div class="page">
     <section class="plate-step">
       <div class="plate-step__layout">
+        <div class="board-column">
+          <div class="board-wrap">
+            <div class="board-axis board-axis--top" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+            <div class="board-axis board-axis--left" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+            <div class="mosaic-board" id="mosaic-board" aria-label="Сетка фрагмента 16 на 16"></div>
+            <div class="board-axis board-axis--right" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+            <div class="board-axis board-axis--bottom" aria-hidden="true">
+              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
+            </div>
+          </div>
+        </div>
+
         <div class="panel-column">
           <h2 class="panel-title">Выберете пластину основы</h2>
 
@@ -931,37 +1004,20 @@
             </button>
           </div>
         </div>
-
-        <div class="board-column">
-          <div class="board-wrap">
-            <div class="board-axis board-axis--top" aria-hidden="true">
-              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
-            </div>
-            <div class="board-axis board-axis--left" aria-hidden="true">
-              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
-            </div>
-            <div class="mosaic-board" id="mosaic-board" aria-label="Сетка фрагмента 16 на 16"></div>
-            <div class="board-axis board-axis--right" aria-hidden="true">
-              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
-            </div>
-            <div class="board-axis board-axis--bottom" aria-hidden="true">
-              <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span>
-            </div>
-          </div>
-        </div>
       </div>
 
-      <div class="mode-actions mode-actions--display">
-        <button class="mode-btn mode-btn--display" type="button">РЕЖИМ ОТОБРАЖЕНИЯ</button>
+      <div class="mode-actions">
+        <div class="mode-actions--display">
+          <button class="mode-btn mode-btn--display" type="button">РЕЖИМ ОТОБРАЖЕНИЯ</button>
+        </div>
+        <div class="mode-actions--clear">
+          <button class="mode-btn mode-btn--clear" type="button">ОЧИСТИТЬ ПОЛЕ</button>
+        </div>
       </div>
 
       <div class="nav-actions">
         <a class="nav-btn nav-btn--back" href="instructions_step1.html">НАЗАД</a>
         <a class="nav-btn nav-btn--next" href="generate_step3.html">ВПЕРЁД</a>
-      </div>
-
-      <div class="mode-actions mode-actions--clear">
-        <button class="mode-btn mode-btn--clear" type="button">ОЧИСТИТЬ ПОЛЕ</button>
       </div>
 
       <h4 class="help-title">Управление сборкой:</h4>
@@ -972,6 +1028,9 @@
         <span class="help-text__label">Продвинуться на 1 шаг</span> - кнопка ВПЕРЁД<br>
         <span class="help-text__label">Полностью очистить весь фрагмент</span> - кнопка ОЧИСТИТЬ ПОЛЕ
       </p>
+      <div class="help-top-action">
+        <a class="mode-btn help-top-action__btn" href="#page-top">В НАЧАЛО ИНСТРУКЦИИ</a>
+      </div>
     </section>
   </div>
 
@@ -1035,7 +1094,7 @@
     const selectorNextButton = document.querySelector(".plate-selector .selector-arrow:last-child");
     const outlineButton = document.querySelector(".outline-btn");
     const modeButtons = Array.from(document.querySelectorAll(".mode-actions .mode-btn"));
-    const clearFieldButton = document.querySelector(".mode-btn--clear") || modeButtons[1] || null;
+    const clearFieldButton = modeButtons[1] || null;
     const outlineModal = document.getElementById("outline-modal");
     const outlineModalClose = document.getElementById("outline-modal-close");
     const outlineModalCanvas = document.getElementById("outline-modal-canvas");
