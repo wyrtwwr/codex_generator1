@@ -274,7 +274,8 @@
     version: 1,
     storeName: "files",
     originalImageKey: "step4_original_image",
-    editedImageKey: "step6_edited_image"
+    editedImageKey: "step6_edited_image",
+    generatedMosaicKey: "step8_generated_mosaic"
   };
 
   const STORAGE_KEYS = {
@@ -282,7 +283,8 @@
     editorOrientation: "mozle_editor_orientation",
     uploadedImageName: "mozle_uploaded_image_name",
     uploadedImageFallback: "mozle_uploaded_image_data",
-    editedImageFallback: "mozle_edited_image_data"
+    editedImageFallback: "mozle_edited_image_data",
+    generatedMosaicFallback: "mozle_generated_mosaic_data"
   };
 
   const burger = document.getElementById("burger");
@@ -303,6 +305,19 @@
   const shownHints = new Set();
 
   let currentObjectUrl = "";
+  let currentSourceImage = "";
+  let lastGeneratedMosaicData = "";
+  let mosaicRenderId = 0;
+
+  const LEGO_GRAY_PALETTE = [
+    { hex: "#f2f2f2", luma: 242 },
+    { hex: "#dcdcdc", luma: 220 },
+    { hex: "#bababa", luma: 186 },
+    { hex: "#9d9d9d", luma: 157 },
+    { hex: "#7c7c7c", luma: 124 },
+    { hex: "#474747", luma: 71 },
+    { hex: "#171717", luma: 23 }
+  ];
 
   if (burger && menu) {
     burger.addEventListener("click", () => {
@@ -488,6 +503,235 @@
     }
   }
 
+  async function saveStoredImage(record) {
+    if (!record || !record.id || !(record.blob instanceof Blob)) return;
+
+    try {
+      const db = await openImageDB();
+      const transaction = db.transaction(IMAGE_DB_CONFIG.storeName, "readwrite");
+      const request = transaction.objectStore(IMAGE_DB_CONFIG.storeName).put(record);
+
+      await new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error || new Error("Failed to save image"));
+      });
+
+      db.close();
+    } catch (error) {
+      // no-op: keep preview rendering even if persistence fails
+    }
+  }
+
+  async function dataUrlToBlob(dataUrl) {
+    const response = await fetch(dataUrl);
+    return response.blob();
+  }
+
+  async function persistGeneratedMosaic(dataUrl) {
+    if (!dataUrl) return;
+
+    try {
+      localStorage.setItem(STORAGE_KEYS.generatedMosaicFallback, dataUrl);
+    } catch (error) {
+      // no-op
+    }
+
+    try {
+      const blob = await dataUrlToBlob(dataUrl);
+      const sourceName = localStorage.getItem(STORAGE_KEYS.uploadedImageName) || "mosaic.png";
+      await saveStoredImage({
+        id: IMAGE_DB_CONFIG.generatedMosaicKey,
+        blob,
+        name: sourceName,
+        type: "image/png",
+        savedAt: Date.now()
+      });
+    } catch (error) {
+      // no-op
+    }
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function hexToRgb(hexColor) {
+    const clean = String(hexColor || "").replace("#", "");
+    if (clean.length !== 6) return { r: 128, g: 128, b: 128 };
+
+    return {
+      r: Number.parseInt(clean.slice(0, 2), 16),
+      g: Number.parseInt(clean.slice(2, 4), 16),
+      b: Number.parseInt(clean.slice(4, 6), 16)
+    };
+  }
+
+  function rgbToCss(rgb) {
+    return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+  }
+
+  function shiftRgb(rgb, amount) {
+    return {
+      r: clamp(Math.round(rgb.r + amount), 0, 255),
+      g: clamp(Math.round(rgb.g + amount), 0, 255),
+      b: clamp(Math.round(rgb.b + amount), 0, 255)
+    };
+  }
+
+  function getActiveItemIndex(groupName, fallbackIndex = 0) {
+    const group = document.querySelector(`[data-toggle-group="${groupName}"]`);
+    if (!group) return fallbackIndex;
+
+    const items = Array.from(group.querySelectorAll("[data-toggle-item]"));
+    const activeIndex = items.findIndex((item) => item.classList.contains("is-active"));
+    return activeIndex >= 0 ? activeIndex : fallbackIndex;
+  }
+
+  function isGroupActive(groupName) {
+    const group = document.querySelector(`[data-toggle-group="${groupName}"]`);
+    if (!group) return false;
+    return Boolean(group.querySelector("[data-toggle-item].is-active"));
+  }
+
+  function getMosaicGridSize() {
+    const { renderRows, renderCols } = getRenderDimensions();
+    const rows = clamp(renderRows * 16, 32, 128);
+    const cols = clamp(renderCols * 16, 32, 128);
+    return { rows, cols };
+  }
+
+  function getToneShift() {
+    const toneIndex = getActiveItemIndex("tone", 1);
+    if (toneIndex === 0) return 20;
+    if (toneIndex === 2) return -20;
+    return 0;
+  }
+
+  function findNearestPaletteColorByLuma(luma) {
+    let nearest = LEGO_GRAY_PALETTE[0];
+    let minDelta = Infinity;
+
+    LEGO_GRAY_PALETTE.forEach((entry) => {
+      const delta = Math.abs(entry.luma - luma);
+      if (delta < minDelta) {
+        minDelta = delta;
+        nearest = entry;
+      }
+    });
+
+    return nearest.hex;
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("Image load failed"));
+      image.src = src;
+    });
+  }
+
+  async function generateLegoMosaicDataUrl(sourceSrc) {
+    const image = await loadImage(sourceSrc);
+    const turboEnabled = isGroupActive("turbo");
+    const frameEnabled = getActiveItemIndex("frame", 1) === 1;
+    const toneShift = getToneShift();
+    const { rows, cols } = getMosaicGridSize();
+
+    const sampleCanvas = document.createElement("canvas");
+    sampleCanvas.width = cols;
+    sampleCanvas.height = rows;
+    const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
+
+    if (!sampleCtx) throw new Error("2D context unavailable");
+
+    const sourceRatio = image.width / image.height || 1;
+    const targetRatio = cols / rows || 1;
+    let drawWidth = cols;
+    let drawHeight = rows;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    if (sourceRatio > targetRatio) {
+      drawHeight = rows;
+      drawWidth = rows * sourceRatio;
+      offsetX = (cols - drawWidth) / 2;
+    } else {
+      drawWidth = cols;
+      drawHeight = cols / sourceRatio;
+      offsetY = (rows - drawHeight) / 2;
+    }
+
+    sampleCtx.imageSmoothingEnabled = true;
+    sampleCtx.imageSmoothingQuality = "high";
+    sampleCtx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
+
+    const sampled = sampleCtx.getImageData(0, 0, cols, rows).data;
+    const studSize = clamp(Math.round(900 / Math.max(cols, rows)), 6, 18);
+    const outputCanvas = document.createElement("canvas");
+    outputCanvas.width = cols * studSize;
+    outputCanvas.height = rows * studSize;
+    const ctx = outputCanvas.getContext("2d");
+    if (!ctx) throw new Error("Output canvas unavailable");
+
+    for (let y = 0; y < rows; y += 1) {
+      for (let x = 0; x < cols; x += 1) {
+        const i = (y * cols + x) * 4;
+        const r = sampled[i];
+        const g = sampled[i + 1];
+        const b = sampled[i + 2];
+        const alpha = sampled[i + 3] / 255;
+        let luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) * alpha + (1 - alpha) * 255;
+
+        if (turboEnabled) {
+          luma = ((luma - 128) * 1.24) + 128;
+        }
+        luma = clamp(luma + toneShift, 0, 255);
+
+        let hexColor = findNearestPaletteColorByLuma(luma);
+        const isFrameCell = x === 0 || y === 0 || x === cols - 1 || y === rows - 1;
+        if (frameEnabled && isFrameCell) {
+          hexColor = "#f4f4f4";
+        }
+
+        const base = hexToRgb(hexColor);
+        const darker = shiftRgb(base, -18);
+        const lighter = shiftRgb(base, 24);
+        const px = x * studSize;
+        const py = y * studSize;
+        const radius = studSize * 0.35;
+        const cx = px + (studSize / 2);
+        const cy = py + (studSize / 2);
+
+        ctx.fillStyle = rgbToCss(base);
+        ctx.fillRect(px, py, studSize, studSize);
+
+        ctx.strokeStyle = "rgba(0,0,0,0.16)";
+        ctx.lineWidth = Math.max(1, studSize * 0.06);
+        ctx.strokeRect(px + 0.5, py + 0.5, studSize - 1, studSize - 1);
+
+        const studGradient = ctx.createRadialGradient(
+          cx - radius * 0.35,
+          cy - radius * 0.45,
+          radius * 0.15,
+          cx,
+          cy,
+          radius
+        );
+        studGradient.addColorStop(0, rgbToCss(lighter));
+        studGradient.addColorStop(0.72, rgbToCss(base));
+        studGradient.addColorStop(1, rgbToCss(darker));
+
+        ctx.fillStyle = studGradient;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    return outputCanvas.toDataURL("image/png");
+  }
+
   function setPreviewSource(src) {
     const hasImage = Boolean(src);
 
@@ -509,6 +753,34 @@
     previewEmpty.classList.remove("is-visible");
   }
 
+  async function setMosaicPreviewFromSource(src) {
+    const nextRenderId = ++mosaicRenderId;
+    currentSourceImage = src || "";
+
+    if (!src) {
+      setPreviewSource("");
+      return;
+    }
+
+    try {
+      const mosaicSrc = await generateLegoMosaicDataUrl(src);
+      if (nextRenderId !== mosaicRenderId) return;
+      setPreviewSource(mosaicSrc);
+      if (mosaicSrc !== lastGeneratedMosaicData) {
+        lastGeneratedMosaicData = mosaicSrc;
+        void persistGeneratedMosaic(mosaicSrc);
+      }
+    } catch (error) {
+      if (nextRenderId !== mosaicRenderId) return;
+      setPreviewSource(src);
+    }
+  }
+
+  async function refreshMosaicPreview() {
+    if (!currentSourceImage) return;
+    await setMosaicPreviewFromSource(currentSourceImage);
+  }
+
   async function applyStoredImage() {
     const editedRecord = await getStoredImage(IMAGE_DB_CONFIG.editedImageKey);
 
@@ -517,13 +789,13 @@
         URL.revokeObjectURL(currentObjectUrl);
       }
       currentObjectUrl = URL.createObjectURL(editedRecord.blob);
-      setPreviewSource(currentObjectUrl);
+      await setMosaicPreviewFromSource(currentObjectUrl);
       return;
     }
 
     const editedFallbackData = localStorage.getItem(STORAGE_KEYS.editedImageFallback);
     if (editedFallbackData) {
-      setPreviewSource(editedFallbackData);
+      await setMosaicPreviewFromSource(editedFallbackData);
       return;
     }
 
@@ -534,21 +806,22 @@
         URL.revokeObjectURL(currentObjectUrl);
       }
       currentObjectUrl = URL.createObjectURL(storedRecord.blob);
-      setPreviewSource(currentObjectUrl);
+      await setMosaicPreviewFromSource(currentObjectUrl);
       return;
     }
 
     const fallbackData = localStorage.getItem(STORAGE_KEYS.uploadedImageFallback);
     if (fallbackData) {
-      setPreviewSource(fallbackData);
+      await setMosaicPreviewFromSource(fallbackData);
       return;
     }
 
-    setPreviewSource("");
+    await setMosaicPreviewFromSource("");
   }
 
   function bindToggleGroups() {
     document.querySelectorAll("[data-toggle-group]").forEach((group) => {
+      const groupName = group.getAttribute("data-toggle-group") || "";
       const items = Array.from(group.querySelectorAll("[data-toggle-item]"));
       const allowEmpty = group.getAttribute("data-toggle-allow-empty") === "true";
 
@@ -558,16 +831,26 @@
 
           if (allowEmpty && items.length === 1) {
             item.classList.toggle("is-active");
+            if (["palette", "turbo", "tone", "frame"].includes(groupName)) {
+              void refreshMosaicPreview();
+            }
             return;
           }
 
           if (allowEmpty && isActive) {
             item.classList.remove("is-active");
+            if (["palette", "turbo", "tone", "frame"].includes(groupName)) {
+              void refreshMosaicPreview();
+            }
             return;
           }
 
           items.forEach((button) => button.classList.remove("is-active"));
           item.classList.add("is-active");
+
+          if (["palette", "turbo", "tone", "frame"].includes(groupName)) {
+            void refreshMosaicPreview();
+          }
         });
       });
     });

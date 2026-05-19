@@ -139,7 +139,8 @@
     version: 1,
     storeName: "files",
     originalImageKey: "step4_original_image",
-    editedImageKey: "step6_edited_image"
+    editedImageKey: "step6_edited_image",
+    generatedMosaicKey: "step8_generated_mosaic"
   };
 
   const STORAGE_KEYS = {
@@ -147,7 +148,8 @@
     editorOrientation: "mozle_editor_orientation",
     uploadedImageName: "mozle_uploaded_image_name",
     uploadedImageFallback: "mozle_uploaded_image_data",
-    editedImageFallback: "mozle_edited_image_data"
+    editedImageFallback: "mozle_edited_image_data",
+    generatedMosaicFallback: "mozle_generated_mosaic_data"
   };
 
   const burger = document.getElementById("burger");
@@ -250,6 +252,23 @@
   }
 
   async function applyStoredImage() {
+    const generatedRecord = await getStoredImage(IMAGE_DB_CONFIG.generatedMosaicKey);
+
+    if (generatedRecord && generatedRecord.blob) {
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl);
+      }
+      currentObjectUrl = URL.createObjectURL(generatedRecord.blob);
+      setPreviewSource(currentObjectUrl);
+      return;
+    }
+
+    const generatedFallbackData = localStorage.getItem(STORAGE_KEYS.generatedMosaicFallback);
+    if (generatedFallbackData) {
+      setPreviewSource(generatedFallbackData);
+      return;
+    }
+
     const editedRecord = await getStoredImage(IMAGE_DB_CONFIG.editedImageKey);
 
     if (editedRecord && editedRecord.blob) {
